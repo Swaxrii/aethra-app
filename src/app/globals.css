@@ -15,12 +15,12 @@ body::before {
   content: "";
   position: fixed;
   z-index: -1;
-  width: 433px;
-  height: 455px;
-  left: -165px;
-  bottom: -228px;
+  width: 250px;
+  height: 260px;
+  left: -100px;
+  bottom: -130px;
   background: #FFFFFF;
-  filter: blur(295.5px);
+  filter: blur(120px);
   pointer-events: none;
 }
 
@@ -28,11 +28,45 @@ body::after {
   content: "";
   position: fixed;
   z-index: -1;
-  width: 562px;
-  height: 561px;
-  right: -150px;
-  top: -281px;
+  width: 280px;
+  height: 280px;
+  right: -80px;
+  top: -140px;
   background: #6A1E55;
-  filter: blur(295.5px);
+  filter: blur(120px);
   pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  body::before {
+    width: 350px;
+    height: 370px;
+    left: -190px;
+    bottom: -180px;
+    filter: blur(200px);
+  }
+  body::after {
+    width: 420px;
+    height: 420px;
+    right: -170px;
+    top: -200px;
+    filter: blur(200px);
+  }
+}
+
+@media (min-width: 1024px) {
+  body::before {
+    width: 433px;
+    height: 455px;
+    left: -350px;
+    bottom: -228px;
+    filter: blur(295.5px);
+  }
+  body::after {
+    width: 562px;
+    height: 561px;
+    right: -350px;
+    top: -281px;
+    filter: blur(295.5px);
+  }
 }
