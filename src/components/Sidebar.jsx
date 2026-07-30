@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [showCloseIcon, setShowCloseIcon] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -29,14 +29,14 @@ export default function Sidebar() {
           onClick={() => setIsOpen(false)}
         />
       )}
-      <aside className={sidebarClass}>
-      {isOpen ? (
-        <>
-          <div
-        className="flex items-center gap-3 px-4 pt-6 relative"
+      <aside
+        className={sidebarClass}
         onMouseEnter={() => setShowCloseIcon(true)}
         onMouseLeave={() => setShowCloseIcon(false)}
       >
+      {isOpen ? (
+        <>
+          <div className="flex items-center gap-3 px-4 pt-6 relative">
         <Image
           src="/logo.svg"
           alt="AethraCore"

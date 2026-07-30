@@ -2,8 +2,9 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata = {
-  title: "AethraCore",
+  title: "Aethra AI",
   description: "Next.js application",
+  icons: { icon: "/logo.svg" },
 };
 
 export default function RootLayout({ children }) {
