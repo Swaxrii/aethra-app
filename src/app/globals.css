@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Manrope", sans-serif;
+}
+
+body {
+  background: #1A1A1D;
+  color: #FFFFFF;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  width: 433px;
+  height: 455px;
+  left: -165px;
+  bottom: -228px;
+  background: #FFFFFF;
+  filter: blur(295.5px);
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  width: 562px;
+  height: 561px;
+  right: -150px;
+  top: -281px;
+  background: #6A1E55;
+  filter: blur(295.5px);
+  pointer-events: none;
+}
