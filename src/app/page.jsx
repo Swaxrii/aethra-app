@@ -1,6 +1,7 @@
 export default function Home() {
   return (
-    <main className="relative z-10 flex flex-1 items-center justify-center">
-    </main>
+    <h1 className="text-2xl font-semibold tracking-tight text-white">
+      AethraCore
+    </h1>
   );
 }

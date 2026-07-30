@@ -14,6 +14,7 @@ body {
 body::before {
   content: "";
   position: fixed;
+  z-index: -1;
   width: 433px;
   height: 455px;
   left: -165px;
@@ -26,6 +27,7 @@ body::before {
 body::after {
   content: "";
   position: fixed;
+  z-index: -1;
   width: 562px;
   height: 561px;
   right: -150px;
