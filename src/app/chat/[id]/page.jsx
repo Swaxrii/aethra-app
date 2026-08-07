@@ -110,14 +110,11 @@ export default function ChatPage() {
               type="button"
               onClick={() => setOpen(!open)}
               aria-label="Select AI model"
-              className="h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-2.5 sm:px-3.5 flex items-center justify-center gap-2 text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] cursor-pointer"
+              className="h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3 sm:px-3.5 flex items-center justify-center gap-2 text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] cursor-pointer"
             >
-              <span className="hidden sm:block max-w-[130px] truncate">{model}</span>
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="5" width="18" height="14" rx="4" />
-                <circle cx="9" cy="12" r="1.5" />
-                <circle cx="15" cy="12" r="1.5" />
-                <path d="M9 15.5h6" />
+              <span className="max-w-[110px] truncate">{model}</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 flex-shrink-0 ${open ? "rotate-180" : ""}`}>
+                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             {open && (
