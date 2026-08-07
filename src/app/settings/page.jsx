@@ -22,13 +22,24 @@ export default function SettingsPage() {
   const [temperature, setTemperature] = useState(0.7);
   const [responseLength, setResponseLength] = useState("Balanced");
 
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
   const temperatureLabel =
     temperature < 0.4 ? "Focused"
     : temperature < 1.1 ? "Balanced"
     : temperature < 1.6 ? "Creative"
     : "Wild";
 
-  const save = () => {};
+  const save = () => {
+    if (saving) return;
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }, 1000);
+  };
 
   return (
     <div className="w-full h-full overflow-y-auto px-6 py-10">
@@ -92,7 +103,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <PrimaryButton onClick={save}>Save</PrimaryButton>
+                  <PrimaryButton onClick={save} saving={saving} saved={saved}>Save</PrimaryButton>
                 </div>
               </>
             )}
@@ -166,7 +177,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <PrimaryButton onClick={save}>Save</PrimaryButton>
+                  <PrimaryButton onClick={save} saving={saving} saved={saved}>Save</PrimaryButton>
                 </div>
               </>
             )}
@@ -235,13 +246,18 @@ function Field({ label, children }) {
   );
 }
 
-function PrimaryButton({ onClick, children }) {
+function PrimaryButton({ onClick, children, saving, saved }) {
   return (
     <button
       onClick={onClick}
-      className="h-11 px-6 rounded-xl bg-[#A64D79] text-white text-sm font-medium shadow-[0_1px_3px_rgba(0,0,0,0.35)] transition-all duration-200 cursor-pointer hover:bg-[#A64D79]/90 active:scale-[0.98]"
+      disabled={saving}
+      className={`h-11 min-w-[130px] px-6 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+        saving
+          ? "bg-[#A64D79]/80 text-white"
+          : "bg-[#A64D79] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:bg-[#A64D79]/90"
+      }`}
     >
-      {children}
+      {saving ? "Saving..." : saved ? "Saved" : children}
     </button>
   );
 }
