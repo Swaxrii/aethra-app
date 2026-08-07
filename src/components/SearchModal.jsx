@@ -59,12 +59,7 @@ export default function SearchModal({ open, onClose }) {
         className="w-full max-w-[560px] rounded-2xl bg-[#232326] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.6)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-          <svg className="w-4 h-4 text-white/40 flex-shrink-0" viewBox="0 0 66 66" fill="none">
-            <path d="M25.285 45.5668C14.3154 45.5668 5.37498 36.6214 5.37498 25.6454C5.37498 14.6694 14.3154 5.724 25.285 5.724C36.2546 5.724 45.195 14.6694 45.195 25.6454C45.195 36.6214 36.2546 45.5668 25.285 45.5668Z" fill="currentColor" fillOpacity="0.15"/>
-            <path d="M53.6081 57.4065C53.6081 57.4065 49.116 52.9106 49.116 52.9106C48.611 52.4066 47.8397 52.4066 47.3347 52.9106L43.9215 56.322C43.4183 56.8249 43.4183 57.5935 43.9215 58.0964L48.4136 62.5923C48.9186 63.0963 49.6899 63.0963 50.1949 62.5923L53.6081 59.1809C54.1113 58.678 54.1113 57.9094 53.6081 57.4065Z" fill="currentColor" fillOpacity="0.15"/>
-            <path d="M25.285 9.833C13.585 9.833 4.217 19.2053 4.217 30.9105C4.217 42.6157 13.585 51.988 25.285 51.988C36.985 51.988 46.353 42.6157 46.353 30.9105C46.353 19.2053 36.985 9.833 25.285 9.833ZM35.1974 44.1257C31.2825 46.3199 27.5054 47.4236 25.285 47.4236C14.0409 47.4236 4.7817 38.1596 4.7817 26.9094C4.7817 15.6592 14.0409 6.39526 25.285 6.39526C36.5291 6.39526 45.7883 15.6592 45.7883 26.9094C45.7883 33.3275 39.7095 40.4885 35.1974 44.1257Z" fill="currentColor" fillOpacity="0.4"/>
-          </svg>
+<div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
           <input
             ref={inputRef}
             type="text"
