@@ -51,7 +51,7 @@ export default function SettingsPage() {
                     onClick={() => setActive(s.id)}
                     className={`text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 cursor-pointer ${
                       on
-                        ? "bg-[#A64D79] text-white font-medium shadow-[0_0_16px_rgba(166,77,121,0.3)]"
+                        ? "bg-[#A64D79] text-white font-medium"
                         : "text-white/55 hover:text-white hover:bg-white/5"
                     }`}
                   >
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                           onClick={() => setModel(m.value)}
                           className={`w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${
                             on
-                              ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[0_0_16px_rgba(166,77,121,0.15)]"
+                              ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                               : "border-white/10 hover:border-white/20"
                           }`}
                         >
@@ -192,7 +192,6 @@ export default function SettingsPage() {
         }
         .input:focus {
           border-color: #A64D79;
-          box-shadow: 0 0 0 3px rgba(166, 77, 121, 0.15);
         }
         .slider {
           -webkit-appearance: none;
@@ -211,16 +210,16 @@ export default function SettingsPage() {
           height: 18px;
           border-radius: 50%;
           background: #A64D79;
-          border: 3px solid #fff;
-          box-shadow: 0 0 10px rgba(166, 77, 121, 0.5);
+          border: 2px solid #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
         .slider::-moz-range-thumb {
           width: 18px;
           height: 18px;
           border-radius: 50%;
           background: #A64D79;
-          border: 3px solid #fff;
-          box-shadow: 0 0 10px rgba(166, 77, 121, 0.5);
+          border: 2px solid #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
       `}</style>
     </div>
@@ -240,7 +239,7 @@ function PrimaryButton({ onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className="h-11 px-6 rounded-xl bg-[#A64D79] text-white text-sm font-medium transition-all duration-200 cursor-pointer hover:bg-[#A64D79]/90 hover:shadow-[0_0_18px_rgba(166,77,121,0.35)] active:scale-[0.98]"
+      className="h-11 px-6 rounded-xl bg-[#A64D79] text-white text-sm font-medium shadow-[0_1px_3px_rgba(0,0,0,0.35)] transition-all duration-200 cursor-pointer hover:bg-[#A64D79]/90 active:scale-[0.98]"
     >
       {children}
     </button>
@@ -268,7 +267,7 @@ function Segmented({ options, value, onChange }) {
           onClick={() => onChange(opt)}
           className={`flex-1 px-3 py-1.5 text-sm rounded-md transition-all duration-200 cursor-pointer ${
             value === opt
-              ? "bg-[#A64D79] text-white shadow-sm"
+              ? "bg-[#A64D79] text-white"
               : "text-white/55 hover:text-white"
           }`}
         >
