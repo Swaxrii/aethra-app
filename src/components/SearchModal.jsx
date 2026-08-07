@@ -38,12 +38,8 @@ export default function SearchModal({ open, onClose }) {
   if (!open) return null;
 
   const q = query.trim().toLowerCase();
-  const filteredProjects = q
-    ? projects.filter((p) => p.title.toLowerCase().includes(q))
-    : projects;
-  const filteredShortcuts = q
-    ? SHORTCUTS.filter((s) => s.label.toLowerCase().includes(q))
-    : SHORTCUTS;
+  const filteredProjects = q ? projects.filter((p) => p.title.toLowerCase().includes(q)) : projects;
+  const filteredShortcuts = q ? SHORTCUTS.filter((s) => s.label.toLowerCase().includes(q)) : SHORTCUTS;
 
   const openRoute = (to) => {
     onClose();
@@ -51,27 +47,11 @@ export default function SearchModal({ open, onClose }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-start justify-center bg-black/60 pt-[12vh] px-4"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-[560px] rounded-2xl bg-[#232326] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.6)] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-<div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Search projects, pages, commands..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
-          />
-          <button
-            onClick={onClose}
-            className="flex-shrink-0 text-[11px] px-2 py-1 rounded-md border border-white/10 text-white/50 hover:text-white/80 hover:border-white/25 transition-all cursor-pointer"
-          >
+    <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/60 pt-[12vh] px-4" onClick={onClose}>
+      <div className="w-full max-w-[560px] rounded-2xl bg-[#232326] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.6)] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+          <input ref={inputRef} type="text" placeholder="Search projects, pages, commands..." value={query} onChange={(e) => setQuery(e.target.value)} className="flex-1 bg-transparent text-sm text-white placeholder:text-white/40 outline-none" />
+          <button onClick={onClose} className="flex-shrink-0 text-[11px] px-2 py-1 rounded-md border border-white/10 text-white/50 hover:text-white/80 hover:border-white/25 transition-all cursor-pointer">
             ESC
           </button>
         </div>
@@ -79,15 +59,9 @@ export default function SearchModal({ open, onClose }) {
         <div className="max-h-[50vh] overflow-y-auto p-2">
           {filteredProjects.length > 0 && (
             <>
-              <div className="px-3 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-white/40">
-                Projects
-              </div>
+              <div className="px-3 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-white/40">Projects</div>
               {filteredProjects.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => openRoute(`/chat/${p.id}`)}
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/80 hover:bg-[rgba(166,77,121,0.15)] hover:text-white transition-all cursor-pointer text-left"
-                >
+                <button key={p.id} onClick={() => openRoute(`/chat/${p.id}`)} className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/80 hover:bg-[rgba(166,77,121,0.15)] hover:text-white transition-all cursor-pointer text-left">
                   <svg className="w-4 h-4 text-[#A64D79] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 6h18M3 12h18M3 18h18" />
                   </svg>
@@ -99,15 +73,9 @@ export default function SearchModal({ open, onClose }) {
 
           {filteredShortcuts.length > 0 && (
             <>
-              <div className="px-3 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-white/40">
-                Pages
-              </div>
+              <div className="px-3 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-white/40">Pages</div>
               {filteredShortcuts.map((s) => (
-                <button
-                  key={s.label}
-                  onClick={() => openRoute(s.to)}
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/80 hover:bg-[rgba(166,77,121,0.15)] hover:text-white transition-all cursor-pointer text-left"
-                >
+                <button key={s.label} onClick={() => openRoute(s.to)} className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/80 hover:bg-[rgba(166,77,121,0.15)] hover:text-white transition-all cursor-pointer text-left">
                   {s.icon === "new-chat" ? (
                     <svg className="w-4 h-4 text-[#A64D79] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 5v14M5 12h14" />
@@ -124,11 +92,7 @@ export default function SearchModal({ open, onClose }) {
             </>
           )}
 
-          {filteredProjects.length === 0 && filteredShortcuts.length === 0 && (
-            <div className="px-3 py-8 text-center text-sm text-white/40">
-              No results for &quot;{query}&quot;
-            </div>
-          )}
+          {filteredProjects.length === 0 && filteredShortcuts.length === 0 && <div className="px-3 py-8 text-center text-sm text-white/40">No results for &quot;{query}&quot;</div>}
         </div>
       </div>
     </div>

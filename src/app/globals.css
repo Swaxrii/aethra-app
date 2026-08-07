@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
 @import "tailwindcss";
 
 @theme inline {
@@ -6,8 +6,8 @@
 }
 
 body {
-  background: #1A1A1D;
-  color: #FFFFFF;
+  background: #1a1a1d;
+  color: #ffffff;
   overflow: hidden;
 }
 
@@ -42,7 +42,7 @@ body::before {
   height: 260px;
   left: -100px;
   bottom: -130px;
-  background: #FFFFFF;
+  background: #ffffff;
   filter: blur(120px);
   pointer-events: none;
 }
@@ -55,7 +55,7 @@ body::after {
   height: 280px;
   right: -80px;
   top: -140px;
-  background: #6A1E55;
+  background: #6a1e55;
   filter: blur(120px);
   pointer-events: none;
 }

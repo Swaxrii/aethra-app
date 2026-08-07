@@ -44,15 +44,10 @@ export function addMessage(id, text, model) {
 
 export function aiReply(prompt, model) {
   const t = prompt.toLowerCase();
-  if (t.includes("build") || t.includes("landing") || t.includes("page"))
-    return "I'll help you build that. Start with a clean component structure and a mobile-first layout, then layer in the styling with Tailwind. I can scaffold the sections one by one as you need them.";
-  if (t.includes("color") || t.includes("palette") || t.includes("theme"))
-    return "For a modern dark UI I'd go with a deep charcoal background, a single vivid accent for interactive elements, and white with varying opacity for text hierarchy. That keeps contrast high and the interface easy on the eyes.";
-  if (t.includes("code") || t.includes("function") || t.includes("api"))
-    return "Sure. I'd break this into a small utility module with clear function names and error handling, then test each path with a few edge cases. Send me the exact inputs and I'll write the implementation.";
-  if (t.includes("bug") || t.includes("error") || t.includes("debug"))
-    return "Let's debug it step by step. Reproduce the error, check the stack trace, and narrow it down to the smallest failing case. Once you share the relevant code and the error message, I can pinpoint the cause.";
-  if (t.includes("test"))
-    return "Good idea to add tests early. I'd write a few focused tests covering the main scenarios and edge cases, then run them to make sure everything passes before moving on.";
+  if (t.includes("build") || t.includes("landing") || t.includes("page")) return "I'll help you build that. Start with a clean component structure and a mobile-first layout, then layer in the styling with Tailwind. I can scaffold the sections one by one as you need them.";
+  if (t.includes("color") || t.includes("palette") || t.includes("theme")) return "For a modern dark UI I'd go with a deep charcoal background, a single vivid accent for interactive elements, and white with varying opacity for text hierarchy. That keeps contrast high and the interface easy on the eyes.";
+  if (t.includes("code") || t.includes("function") || t.includes("api")) return "Sure. I'd break this into a small utility module with clear function names and error handling, then test each path with a few edge cases. Send me the exact inputs and I'll write the implementation.";
+  if (t.includes("bug") || t.includes("error") || t.includes("debug")) return "Let's debug it step by step. Reproduce the error, check the stack trace, and narrow it down to the smallest failing case. Once you share the relevant code and the error message, I can pinpoint the cause.";
+  if (t.includes("test")) return "Good idea to add tests early. I'd write a few focused tests covering the main scenarios and edge cases, then run them to make sure everything passes before moving on.";
   return `Thanks for the prompt. Here's how I'd approach "${prompt}" — I'll break it into small, clear steps and give you practical guidance in plain English as we go.`;
 }

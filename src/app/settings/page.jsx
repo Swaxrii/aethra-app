@@ -24,11 +24,7 @@ export default function SettingsPage() {
 
   const [saving, setSaving] = useState(false);
 
-  const temperatureLabel =
-    temperature < 0.4 ? "Focused"
-    : temperature < 1.1 ? "Balanced"
-    : temperature < 1.6 ? "Creative"
-    : "Wild";
+  const temperatureLabel = temperature < 0.4 ? "Focused" : temperature < 1.1 ? "Balanced" : temperature < 1.6 ? "Creative" : "Wild";
 
   const save = () => {
     if (saving) return;
@@ -41,9 +37,7 @@ export default function SettingsPage() {
       <div className="max-w-[960px] mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-white">Settings</h1>
-          <p className="mt-1 text-sm font-light text-white/55">
-            Customize your experience. Changes are applied instantly.
-          </p>
+          <p className="mt-1 text-sm font-light text-white/55">Customize your experience. Changes are applied instantly.</p>
         </header>
 
         <div className="flex flex-col md:flex-row gap-6">
@@ -52,15 +46,7 @@ export default function SettingsPage() {
               {SECTIONS.map((s) => {
                 const on = active === s.id;
                 return (
-                  <button
-                    key={s.id}
-                    onClick={() => setActive(s.id)}
-                    className={`text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 cursor-pointer ${
-                      on
-                        ? "bg-[#A64D79] text-white font-medium"
-                        : "text-white/55 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
+                  <button key={s.id} onClick={() => setActive(s.id)} className={`text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 cursor-pointer ${on ? "bg-[#A64D79] text-white font-medium" : "text-white/55 hover:text-white hover:bg-white/5"}`}>
                     {s.label}
                   </button>
                 );
@@ -74,9 +60,7 @@ export default function SettingsPage() {
                 <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6">
                   <div className="flex items-center gap-5">
                     <div className="relative flex-shrink-0">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center text-white font-bold text-2xl">
-                        {name[0] || "A"}
-                      </div>
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center text-white font-bold text-2xl">{name[0] || "A"}</div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-base font-semibold text-white">{name}</div>
@@ -98,7 +82,9 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <PrimaryButton onClick={save} saving={saving}>Save</PrimaryButton>
+                  <PrimaryButton onClick={save} saving={saving}>
+                    Save
+                  </PrimaryButton>
                 </div>
               </>
             )}
@@ -111,23 +97,11 @@ export default function SettingsPage() {
                     {MODELS.map((m) => {
                       const on = model === m.value;
                       return (
-                        <button
-                          key={m.value}
-                          onClick={() => setModel(m.value)}
-                          className={`w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${
-                            on
-                              ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                              : "border-white/10 hover:border-white/20"
-                          }`}
-                        >
+                        <button key={m.value} onClick={() => setModel(m.value)} className={`w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${on ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" : "border-white/10 hover:border-white/20"}`}>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-white">{m.value}</span>
-                              {m.tag && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A64D79] text-white font-medium">
-                                  {m.tag}
-                                </span>
-                              )}
+                              {m.tag && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A64D79] text-white font-medium">{m.tag}</span>}
                             </div>
                             <div className="text-xs text-white/45 font-light mt-0.5">{m.desc}</div>
                           </div>
@@ -172,7 +146,9 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <PrimaryButton onClick={save} saving={saving}>Save</PrimaryButton>
+                  <PrimaryButton onClick={save} saving={saving}>
+                    Save
+                  </PrimaryButton>
                 </div>
               </>
             )}
@@ -197,7 +173,7 @@ export default function SettingsPage() {
           color: rgba(255, 255, 255, 0.35);
         }
         .input:focus {
-          border-color: #A64D79;
+          border-color: #a64d79;
         }
         .slider {
           -webkit-appearance: none;
@@ -215,7 +191,7 @@ export default function SettingsPage() {
           width: 18px;
           height: 18px;
           border-radius: 50%;
-          background: #A64D79;
+          background: #a64d79;
           border: 2px solid #fff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
@@ -223,7 +199,7 @@ export default function SettingsPage() {
           width: 18px;
           height: 18px;
           border-radius: 50%;
-          background: #A64D79;
+          background: #a64d79;
           border: 2px solid #fff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
@@ -243,45 +219,21 @@ function Field({ label, children }) {
 
 function PrimaryButton({ onClick, children, saving }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={saving}
-      className={`h-11 min-w-[130px] px-6 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer active:scale-[0.98] ${
-        saving
-          ? "bg-[#7A3A5B] text-white"
-          : "bg-[#A64D79] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:bg-[#A64D79]/90"
-      }`}
-    >
+    <button onClick={onClick} disabled={saving} className={`h-11 min-w-[130px] px-6 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer active:scale-[0.98] ${saving ? "bg-[#7A3A5B] text-white" : "bg-[#A64D79] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:bg-[#A64D79]/90"}`}>
       {saving ? "Saving..." : children}
     </button>
   );
 }
 
 function Radio({ on }) {
-  return (
-    <div
-      className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${
-        on ? "border-[#A64D79]" : "border-white/20"
-      }`}
-    >
-      {on && <div className="w-2.5 h-2.5 rounded-full bg-[#A64D79]" />}
-    </div>
-  );
+  return <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${on ? "border-[#A64D79]" : "border-white/20"}`}>{on && <div className="w-2.5 h-2.5 rounded-full bg-[#A64D79]" />}</div>;
 }
 
 function Segmented({ options, value, onChange }) {
   return (
     <div className="flex rounded-lg bg-white/[0.04] border border-white/10 p-1 gap-1">
       {options.map((opt) => (
-        <button
-          key={opt}
-          onClick={() => onChange(opt)}
-          className={`flex-1 px-3 py-1.5 text-sm rounded-md transition-all duration-200 cursor-pointer ${
-            value === opt
-              ? "bg-[#A64D79] text-white"
-              : "text-white/55 hover:text-white"
-          }`}
-        >
+        <button key={opt} onClick={() => onChange(opt)} className={`flex-1 px-3 py-1.5 text-sm rounded-md transition-all duration-200 cursor-pointer ${value === opt ? "bg-[#A64D79] text-white" : "text-white/55 hover:text-white"}`}>
           {opt}
         </button>
       ))}
