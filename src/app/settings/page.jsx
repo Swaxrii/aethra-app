@@ -23,7 +23,6 @@ export default function SettingsPage() {
   const [responseLength, setResponseLength] = useState("Balanced");
 
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const temperatureLabel =
     temperature < 0.4 ? "Focused"
@@ -34,11 +33,7 @@ export default function SettingsPage() {
   const save = () => {
     if (saving) return;
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }, 1000);
+    setTimeout(() => setSaving(false), 1000);
   };
 
   return (
@@ -103,7 +98,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <PrimaryButton onClick={save} saving={saving} saved={saved}>Save</PrimaryButton>
+                  <PrimaryButton onClick={save} saving={saving}>Save</PrimaryButton>
                 </div>
               </>
             )}
@@ -177,7 +172,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <PrimaryButton onClick={save} saving={saving} saved={saved}>Save</PrimaryButton>
+                  <PrimaryButton onClick={save} saving={saving}>Save</PrimaryButton>
                 </div>
               </>
             )}
@@ -246,18 +241,18 @@ function Field({ label, children }) {
   );
 }
 
-function PrimaryButton({ onClick, children, saving, saved }) {
+function PrimaryButton({ onClick, children, saving }) {
   return (
     <button
       onClick={onClick}
       disabled={saving}
       className={`h-11 min-w-[130px] px-6 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer active:scale-[0.98] ${
         saving
-          ? "bg-[#A64D79]/80 text-white"
+          ? "bg-[#7A3A5B] text-white"
           : "bg-[#A64D79] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:bg-[#A64D79]/90"
       }`}
     >
-      {saving ? "Saving..." : saved ? "Saved" : children}
+      {saving ? "Saving..." : children}
     </button>
   );
 }
