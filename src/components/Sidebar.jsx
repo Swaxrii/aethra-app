@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
+import { loadProjects } from "@/lib/store";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -11,6 +12,14 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const [showCloseIcon, setShowCloseIcon] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    setProjects(loadProjects());
+    const onStore = () => setProjects(loadProjects());
+    window.addEventListener("aethra-projects", onStore);
+    return () => window.removeEventListener("aethra-projects", onStore);
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -97,6 +106,25 @@ export default function Sidebar() {
           <span className="truncate">Projects</span>
         </button>
       </nav>
+
+      {projects.length > 0 && (
+        <div className="mt-5 px-4 flex flex-col">
+          <span className="px-2 text-[11px] font-light uppercase tracking-wider text-white/50">
+            Recents
+          </span>
+          <div className="mt-2 flex flex-col gap-1 max-h-[240px] overflow-y-auto">
+            {projects.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => router.push(`/chat/${p.id}`)}
+                className="flex cursor-pointer items-center gap-2 rounded-[5px] px-2 py-2 text-[13px] font-normal text-white/70 transition-all hover:bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] hover:text-white"
+              >
+                <span className="truncate">{p.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-auto flex flex-col gap-1 px-4 pb-4">
         <hr className="border-[1px] border-[rgba(255,255,255,0.15)]" />

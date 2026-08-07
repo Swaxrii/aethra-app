@@ -1,4 +1,21 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createProject } from "@/lib/store";
+
 export default function Home() {
+  const router = useRouter();
+  const [value, setValue] = useState("");
+
+  const handleSend = () => {
+    const text = value.trim();
+    if (!text) return;
+    const project = createProject(text);
+    setValue("");
+    router.push(`/chat/${project.id}`);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
       <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-tight text-white">
@@ -25,9 +42,13 @@ export default function Home() {
         <input
           type="text"
           placeholder="Ask aethra or type /command"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSend(); }}
           className="w-full h-[52px] sm:h-[60px] rounded-[10px] border bg-[rgba(69,69,69,0.25)] border-[rgba(69,69,69,0.8)] pl-10 sm:pl-14 pr-[56px] sm:pr-[72px] text-sm sm:text-base text-white font-light placeholder:text-white/70 outline-none transition-all duration-500 focus:border-[#A64D79]"
         />
         <button
+          onClick={handleSend}
           className="absolute right-[5px] sm:right-[6px] top-1/2 -translate-y-1/2 flex cursor-pointer items-center justify-center w-[32px] h-[32px] sm:w-[37px] sm:h-[37px] rounded-[6px] bg-[rgba(69,69,69,0.25)] border-[0.6px] border-[rgba(69,69,69,0.8)] transition-all duration-500 hover:scale-105 hover:border-[#A64D79] hover:shadow-[0_0_10px_rgba(166,77,121,0.12)]"
         >
           <svg width="20" height="18" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
