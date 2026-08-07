@@ -15,6 +15,7 @@ export default function ChatPage() {
   const [model, setModel] = useState(MODELS[0].value);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     const p = getProject(id);
@@ -22,6 +23,12 @@ export default function ChatPage() {
     if (p) setModel(p.model);
     setLoading(false);
   }, [id]);
+
+  useEffect(() => {
+    if (!loading && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [project, loading]);
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -55,7 +62,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-6 py-8">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8">
         <div className="max-w-[1100px] mx-auto space-y-6">
           {project.messages.map((m, i) => (
             <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
