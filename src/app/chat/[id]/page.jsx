@@ -94,7 +94,8 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="border-t border-[rgba(69,69,69,0.3)] px-3 sm:px-6 py-3 sm:py-4">
+      <div className="relative px-3 sm:px-6 py-3 sm:py-4">
+        <div className="absolute top-0 left-0 right-0 h-px bg-[linear-gradient(90deg,transparent,rgba(69,69,69,0.4)_12%,rgba(69,69,69,0.4)_88%,transparent)]" />
         <div className="max-w-[820px] mx-auto flex items-center gap-2 sm:gap-3">
           <input
             type="text"

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSession } from "@/lib/session";
 
 const SECTIONS = [
   { id: "profile", label: "Profile" },
@@ -15,14 +16,23 @@ const MODELS = [
 export default function SettingsPage() {
   const [active, setActive] = useState("profile");
 
-  const [name, setName] = useState("Ziixry");
-  const [email, setEmail] = useState("zivvex@gmail.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   const [model, setModel] = useState("Aethra 1.0");
   const [temperature, setTemperature] = useState(0.7);
   const [responseLength, setResponseLength] = useState("Balanced");
 
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const user = getSession();
+    if (user) {
+      const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+      setName(fullName || user.email.split("@")[0]);
+      setEmail(user.email);
+    }
+  }, []);
 
   const temperatureLabel = temperature < 0.4 ? "Focused" : temperature < 1.1 ? "Balanced" : temperature < 1.6 ? "Creative" : "Wild";
 

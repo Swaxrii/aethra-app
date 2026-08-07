@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createProject } from "@/lib/store";
+import { getSession } from "@/lib/session";
 
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState("");
+  const [firstName, setFirstName] = useState("");
+
+  useEffect(() => {
+    const user = getSession();
+    if (user) setFirstName(user.firstName || user.email.split("@")[0]);
+  }, []);
 
   const handleSend = () => {
     const text = value.trim();
@@ -19,7 +26,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
       <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-tight text-white">
-        <span className="font-extrabold">GOOD MORNING,</span> <span className="font-extralight">ZIIXRY</span>
+        <span className="font-extrabold">GOOD MORNING,</span> <span className="font-extralight">{firstName}</span>
       </h1>
       <p className="mt-1 text-sm sm:text-base md:text-lg font-extralight text-white/60">What would you like to build today? Type a command or a task</p>
 

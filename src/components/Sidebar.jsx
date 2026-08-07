@@ -4,17 +4,24 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { loadProjects } from "@/lib/store";
+import { clearSession } from "@/lib/session";
 import SearchModal from "./SearchModal";
 
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const isSettings = pathname === "/settings";
+  const isAuth = pathname === "/auth";
   const [isOpen, setIsOpen] = useState(true);
   const [showCloseIcon, setShowCloseIcon] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [projects, setProjects] = useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const logout = () => {
+    clearSession();
+    router.push("/auth");
+  };
 
   useEffect(() => {
     setProjects(loadProjects());
@@ -42,6 +49,8 @@ export default function Sidebar() {
   }, []);
 
   const sidebarClass = isMobile && isOpen ? "fixed inset-y-0 left-0 z-50 flex flex-col bg-[#3B1C32] rounded-none shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out w-[200px]" : `h-full flex-shrink-0 flex flex-col bg-[#3B1C32] rounded-none shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out ${isOpen ? "w-[200px]" : "w-[52px]"}`;
+
+  if (isAuth) return null;
 
   return (
     <>
@@ -124,7 +133,7 @@ export default function Sidebar() {
             )}
 
             <div className="mt-auto flex flex-col gap-1 px-4 pb-4">
-              <hr className="border-[1px] border-[rgba(255,255,255,0.15)]" />
+              <div className="h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15)_15%,rgba(255,255,255,0.15)_85%,transparent)]" />
               <button onClick={() => router.push("/settings")} className={`flex cursor-pointer items-center gap-3 rounded-[5px] px-2 py-2 text-[15px] font-normal transition-all ${isSettings ? "bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] text-white" : "text-white/75 hover:bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] hover:text-white"}`}>
                 <svg width="18" height="18" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
                   <path
@@ -134,7 +143,7 @@ export default function Sidebar() {
                 </svg>
                 <span className="truncate">Settings</span>
               </button>
-              <button className="flex cursor-pointer items-center gap-3 rounded-[5px] px-2 py-2 text-[15px] font-normal text-white/75 transition-all hover:bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] hover:text-white">
+              <button onClick={logout} className="flex cursor-pointer items-center gap-3 rounded-[5px] px-2 py-2 text-[15px] font-normal text-white/75 transition-all hover:bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] hover:text-white">
                 <svg width="18" height="18" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
                   <path
                     d="M9.37402 6.24988L12.4989 9.37476L9.37402 12.4996M12.4989 9.37476H1.04102M6.24915 4.42556V4.37516C6.24915 3.20842 6.24915 2.62462 6.47621 2.179C6.67593 1.787 6.9944 1.46853 7.38639 1.26881C7.832 1.04175 8.41583 1.04175 9.58256 1.04175H14.374C15.5408 1.04175 16.1233 1.04175 16.569 1.26881C16.9609 1.46853 17.2805 1.787 17.4802 2.179C17.707 2.62419 17.707 3.20728 17.707 4.37173V14.3783C17.707 15.5427 17.707 16.125 17.4802 16.5702C17.2805 16.9622 16.9609 17.2812 16.569 17.4809C16.1238 17.7078 15.5415 17.7078 14.3771 17.7078H9.57912C8.41469 17.7078 7.83158 17.7078 7.38639 17.4809C6.9944 17.2812 6.67593 16.9619 6.47621 16.5699C6.24915 16.1243 6.24915 15.5413 6.24915 14.3746V14.3225"
@@ -193,7 +202,7 @@ export default function Sidebar() {
                   />
                 </svg>
               </button>
-              <button className="cursor-pointer text-white/75 hover:text-white transition-colors">
+              <button onClick={logout} className="cursor-pointer text-white/75 hover:text-white transition-colors">
                 <svg width="18" height="18" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M9.37402 6.24988L12.4989 9.37476L9.37402 12.4996M12.4989 9.37476H1.04102M6.24915 4.42556V4.37516C6.24915 3.20842 6.24915 2.62462 6.47621 2.179C6.67593 1.787 6.9944 1.46853 7.38639 1.26881C7.832 1.04175 8.41583 1.04175 9.58256 1.04175H14.374C15.5408 1.04175 16.1233 1.04175 16.569 1.26881C16.9609 1.46853 17.2805 1.787 17.4802 2.179C17.707 2.62419 17.707 3.20728 17.707 4.37173V14.3783C17.707 15.5427 17.707 16.125 17.4802 16.5702C17.2805 16.9622 16.9609 17.2812 16.569 17.4809C16.1238 17.7078 15.5415 17.7078 14.3771 17.7078H9.57912C8.41469 17.7078 7.83158 17.7078 7.38639 17.4809C6.9944 17.2812 6.67593 16.9619 6.47621 16.5699C6.24915 16.1243 6.24915 15.5413 6.24915 14.3746V14.3225"
