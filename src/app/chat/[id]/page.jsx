@@ -63,31 +63,39 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8">
-        <div className="max-w-[1100px] mx-auto space-y-6">
+        <div className="max-w-[820px] mx-auto space-y-8">
           {project.messages.map((m, i) => (
-            <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-              {m.role === "ai" ? (
-                <>
-                  <div className="rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] p-5 text-sm font-light leading-relaxed text-white/85">
-                    {m.text}
+              m.role === "ai" ? (
+                <div key={i} className="flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                        <path d="M12 8V4" />
+                        <circle cx="12" cy="3" r="1" />
+                        <circle cx="9" cy="13" r="1" fill="white" />
+                        <circle cx="15" cy="13" r="1" fill="white" />
+                        <path d="M9 17h6" />
+                      </svg>
+                    </div>
                   </div>
-                  <div className="hidden lg:block" />
-                </>
+                  <div className="flex-1 min-w-0 pt-1">
+                    <div className="text-sm leading-relaxed text-white/90 font-light whitespace-pre-wrap">{m.text}</div>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <div className="hidden lg:block" />
-                  <div className="rounded-[10px] bg-[rgba(166,77,121,0.08)] border border-[#A64D79]/60 p-5 text-sm font-light leading-relaxed text-white">
+                <div key={i} className="flex justify-end">
+                  <div className="max-w-[75%] rounded-[14px] bg-[#A64D79] px-4 py-2.5 text-sm leading-relaxed text-white font-light">
                     {m.text}
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                </div>
+              )
+            ))}
         </div>
       </div>
 
       <div className="border-t border-[rgba(69,69,69,0.3)] px-6 py-4">
-        <div className="max-w-[1100px] mx-auto flex items-center gap-3">
+        <div className="max-w-[820px] mx-auto flex items-center gap-3">
           <input
             type="text"
             placeholder="Ask aethra or type /command"
