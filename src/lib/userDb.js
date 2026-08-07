@@ -50,3 +50,24 @@ export async function verifyCredentials(email, password) {
   if (!ok) return null;
   return user;
 }
+
+export async function updateUser(id, { firstName, lastName, email, password }) {
+  const users = await readUsers();
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) return { error: "User not found" };
+
+  const normalized = email ? email.toLowerCase() : null;
+  if (normalized) {
+    const exists = users.some((u) => u.id !== id && u.email === normalized);
+    if (exists) return { error: "Email already registered" };
+  }
+
+  const user = users[idx];
+  user.firstName = firstName ?? user.firstName;
+  user.lastName = lastName ?? user.lastName;
+  if (normalized) user.email = normalized;
+  if (password) user.passwordHash = await bcrypt.hash(password, 10);
+
+  await writeUsers(users);
+  return { user };
+}

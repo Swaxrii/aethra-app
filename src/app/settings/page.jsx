@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSession } from "@/lib/session";
+import { getSession, setSession } from "@/lib/session";
 
 const SECTIONS = [
   { id: "profile", label: "Profile" },
@@ -18,16 +18,20 @@ export default function SettingsPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userId, setUserId] = useState("");
 
   const [model, setModel] = useState("Aethra 1.0");
   const [temperature, setTemperature] = useState(0.7);
   const [responseLength, setResponseLength] = useState("Balanced");
 
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const user = getSession();
     if (user) {
+      setUserId(user.id);
       const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
       setName(fullName || user.email.split("@")[0]);
       setEmail(user.email);
@@ -36,10 +40,34 @@ export default function SettingsPage() {
 
   const temperatureLabel = temperature < 0.4 ? "Focused" : temperature < 1.1 ? "Balanced" : temperature < 1.6 ? "Creative" : "Wild";
 
-  const save = () => {
+  const save = async () => {
     if (saving) return;
+    setError("");
     setSaving(true);
-    setTimeout(() => setSaving(false), 1000);
+    try {
+      const parts = name.split(" ").filter(Boolean);
+      const firstName = parts[0] || "";
+      const lastName = parts.slice(1).join(" ");
+      const body = { id: userId, firstName, lastName, email };
+      if (password) body.password = password;
+
+      const res = await fetch("/api/auth/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Something went wrong");
+        return;
+      }
+      setPassword("");
+      setSession(data.user);
+      setTimeout(() => setSaving(false), 1000);
+    } catch {
+      setError("Network error. Please try again.");
+      setSaving(false);
+    }
   };
 
   return (
@@ -88,6 +116,10 @@ export default function SettingsPage() {
                     <Field label="Email">
                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
                     </Field>
+                    <Field label="New password">
+                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Leave blank to keep current" className="input" />
+                    </Field>
+                    {error && <p className="text-sm font-light text-red-400">{error}</p>}
                   </div>
                 </div>
 
