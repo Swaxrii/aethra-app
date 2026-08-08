@@ -124,7 +124,7 @@ export default function Sidebar() {
             </div>
 
             <button onClick={() => router.push("/")} className="mx-4 mt-6 flex cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#A64D79] px-3 py-2 text-sm font-medium text-white transition-all duration-200 ease-in-out hover:scale-[1.02] hover:bg-[#A64D79]/90 hover:shadow-md active:scale-[0.97] active:shadow-none">
-              <PlusIcon className="w-[10px] h-[10px]" />
+              <PlusIcon className="w-[16px] h-[16px]" />
               New Chat
             </button>
 

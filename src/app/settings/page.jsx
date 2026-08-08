@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSession, setSession, getModelPref, setModelPref } from "@/lib/session";
+import { getSession, setSession, getModelPref, setModelPref, getTemperaturePref, setTemperaturePref, getResponseLengthPref, setResponseLengthPref } from "@/lib/session";
 
 const SECTIONS = [
   { id: "profile", label: "Profile" },
@@ -38,6 +38,8 @@ export default function SettingsPage() {
     }
     const pref = getModelPref();
     if (pref) setModel(pref);
+    setTemperature(getTemperaturePref());
+    setResponseLength(getResponseLengthPref());
   }, []);
 
   const temperatureLabel = temperature < 0.4 ? "Focused" : temperature < 1.1 ? "Balanced" : temperature < 1.6 ? "Creative" : "Wild";
@@ -66,6 +68,8 @@ export default function SettingsPage() {
       setPassword("");
       setSession(data.user);
       setModelPref(model);
+      setTemperaturePref(temperature);
+      setResponseLengthPref(responseLength);
       setTimeout(() => setSaving(false), 1000);
     } catch {
       setError("Network error. Please try again.");
