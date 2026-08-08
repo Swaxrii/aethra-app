@@ -1,4 +1,5 @@
 const KEY = "aethra_projects";
+const DAY = 24 * 60 * 60 * 1000;
 
 export function loadProjects() {
   if (typeof window === "undefined") return [];
@@ -15,12 +16,29 @@ function saveProjects(list) {
   window.dispatchEvent(new CustomEvent("aethra-projects"));
 }
 
+function lastActivity(p) {
+  return p.lastAccessed || p.createdAt || Date.now();
+}
+
+export function isRecent(p) {
+  return Date.now() - lastActivity(p) < DAY;
+}
+
+export function getRecentProjects() {
+  return loadProjects()
+    .filter(isRecent)
+    .sort((a, b) => lastActivity(b) - lastActivity(a));
+}
+
 export function createProject(prompt) {
   const model = "Aethra 1.0";
+  const now = Date.now();
   const project = {
-    id: "p-" + Date.now(),
+    id: "p-" + now,
     title: prompt,
     model,
+    createdAt: now,
+    lastAccessed: now,
     messages: [
       { role: "user", text: prompt },
       { role: "ai", text: aiReply(prompt, model) },
@@ -34,6 +52,14 @@ export function createProject(prompt) {
 
 export function getProject(id) {
   return loadProjects().find((p) => p.id === id);
+}
+
+export function touchProject(id) {
+  const list = loadProjects();
+  const project = list.find((p) => p.id === id);
+  if (!project) return;
+  project.lastAccessed = Date.now();
+  saveProjects(list);
 }
 
 export function addMessage(id, text, model) {

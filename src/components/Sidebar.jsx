@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
-import { loadProjects, renameProject, deleteProject } from "@/lib/store";
+import { getRecentProjects, renameProject, deleteProject } from "@/lib/store";
 import { clearSession } from "@/lib/session";
 import SearchModal from "./SearchModal";
 import { SearchIcon, FolderIcon, SettingsIcon, LogoutIcon, PlusIcon, PencilIcon, TrashIcon, ChevronLeftIcon } from "./Icons";
@@ -16,6 +16,7 @@ export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const isSettings = pathname === "/settings";
+  const isProjects = pathname === "/projects";
   const isAuth = pathname === "/auth";
   const [isOpen, setIsOpen] = useState(true);
   const [showCloseIcon, setShowCloseIcon] = useState(false);
@@ -75,8 +76,8 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    setProjects(loadProjects());
-    const onStore = () => setProjects(loadProjects());
+    setProjects(getRecentProjects());
+    const onStore = () => setProjects(getRecentProjects());
     window.addEventListener("aethra-projects", onStore);
     return () => window.removeEventListener("aethra-projects", onStore);
   }, []);
@@ -135,7 +136,7 @@ export default function Sidebar() {
                 </span>
                 <span className="border-[0.5px] border-[rgba(255,255,255,0.49)] rounded-[5px] px-1.5 py-0.5 text-[10px] font-light text-white flex-shrink-0">CTRL + M</span>
               </button>
-              <button className={`${NAV_BASE} text-white/75 ${GRADIENT_HOVER}`}>
+              <button onClick={() => router.push("/projects")} className={`${NAV_BASE} ${isProjects ? GRADIENT_ACTIVE : "text-white/75 " + GRADIENT_HOVER}`}>
                 <FolderIcon className={commonWrapper} />
                 <span className="truncate">Projects</span>
               </button>
@@ -180,6 +181,11 @@ export default function Sidebar() {
               </div>
             )}
 
+            <button onClick={() => router.push("/projects")} className={`mt-3 mx-4 flex cursor-pointer items-center justify-center gap-2 rounded-[5px] border border-[rgba(255,255,255,0.15)] px-2 py-1.5 text-[12px] font-normal transition-all ${isProjects ? "border-[#A64D79] text-white" : "text-white/60 hover:border-[#A64D79] hover:text-white"}`}>
+              <FolderIcon className="w-3.5 h-3.5" />
+              Enter Projects
+            </button>
+
             {menu && (
               <div
                 className="fixed z-[80] min-w-[170px] rounded-xl bg-[#232326]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]"
@@ -218,7 +224,7 @@ export default function Sidebar() {
               <SearchIcon className={commonWrapper} />
             </button>
 
-            <button className="cursor-pointer text-white/75 hover:text-white transition-colors">
+            <button onClick={() => router.push("/projects")} className={`cursor-pointer transition-colors ${isProjects ? "text-white" : "text-white/75 hover:text-white"}`}>
               <FolderIcon className={commonWrapper} />
             </button>
 

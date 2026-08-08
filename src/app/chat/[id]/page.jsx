@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { getProject, addMessage } from "@/lib/store";
+import { getProject, addMessage, touchProject } from "@/lib/store";
 
 const MODELS = ["Aethra 1.0", "Aethra 1.1"];
 
@@ -22,6 +22,7 @@ export default function ChatPage() {
     setProject(p);
     if (p) setModel(p.model);
     setLoading(false);
+    touchProject(id);
   }, [id]);
 
   useEffect(() => {
