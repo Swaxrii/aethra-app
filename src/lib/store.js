@@ -16,11 +16,15 @@ function saveProjects(list) {
 }
 
 export function createProject(prompt) {
+  const model = "Aethra 1.0";
   const project = {
     id: "p-" + Date.now(),
     title: prompt,
-    model: "Aethra 1.0",
-    messages: [{ role: "user", text: prompt }],
+    model,
+    messages: [
+      { role: "user", text: prompt },
+      { role: "ai", text: aiReply(prompt, model) },
+    ],
   };
   const list = loadProjects();
   list.unshift(project);
