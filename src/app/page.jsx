@@ -5,6 +5,29 @@ import { useRouter } from "next/navigation";
 import { createProject } from "@/lib/store";
 import { getSession } from "@/lib/session";
 
+const SUGGESTIONS = [
+  {
+    title: "Brainstorm ideas",
+    sub: "Architecture & UI design",
+    prompt: "Brainstorm ideas for a modern web application, focusing on the architecture and UI design.",
+  },
+  {
+    title: "Design system",
+    sub: "Components & tokens",
+    prompt: "Help me create a design system with reusable components and design tokens.",
+  },
+  {
+    title: "Generate code",
+    sub: "Full-stack features",
+    prompt: "Generate code for full-stack features and explain the implementation step by step.",
+  },
+  {
+    title: "Debug & test",
+    sub: "Performance & QA",
+    prompt: "Help me debug and test my application, focusing on performance and quality assurance.",
+  },
+];
+
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState("");
@@ -20,6 +43,11 @@ export default function Home() {
     if (!text) return;
     const project = createProject(text);
     setValue("");
+    router.push(`/chat/${project.id}`);
+  };
+
+  const openSuggestion = (s) => {
+    const project = createProject(s.prompt);
     router.push(`/chat/${project.id}`);
   };
 
@@ -63,22 +91,15 @@ export default function Home() {
       </div>
 
       <div className="mt-4 w-full max-w-[850px] grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-        <div className="h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
-          <p className="text-xs sm:text-sm font-normal text-white truncate">Brainstorm ideas</p>
-          <p className="text-[10px] sm:text-xs font-extralight text-white/60 truncate">Architecture &amp; UI design</p>
-        </div>
-        <div className="h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
-          <p className="text-xs sm:text-sm font-normal text-white truncate">Design system</p>
-          <p className="text-[10px] sm:text-xs font-extralight text-white/60 truncate">Components &amp; tokens</p>
-        </div>
-        <div className="h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
-          <p className="text-xs sm:text-sm font-normal text-white truncate">Generate code</p>
-          <p className="text-[10px] sm:text-xs font-extralight text-white/60 truncate">Full-stack features</p>
-        </div>
-        <div className="h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
-          <p className="text-xs sm:text-sm font-normal text-white truncate">Debug &amp; test</p>
-          <p className="text-[10px] sm:text-xs font-extralight text-white/60 truncate">Performance &amp; QA</p>
-        </div>
+        {SUGGESTIONS.map((s) => (
+          <button
+            key={s.title}
+            onClick={() => openSuggestion(s)}
+            className="h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
+            <p className="text-xs sm:text-sm font-normal text-white truncate">{s.title}</p>
+            <p className="text-[10px] sm:text-xs font-extralight text-white/60 truncate">{s.sub}</p>
+          </button>
+        ))}
       </div>
     </div>
   );
