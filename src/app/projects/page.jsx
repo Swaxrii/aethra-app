@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { loadProjects, touchProject, renameProject, deleteProject } from "@/lib/store";
-import { PencilIcon, TrashIcon, MoreVerticalIcon } from "@/components/Icons";
+import { PencilIcon, TrashIcon, MoreVerticalIcon, FolderIcon } from "@/components/Icons";
 
 function subtitle(p) {
   const count = p.messages?.length || 0;
@@ -68,8 +68,8 @@ export default function ProjectsPage() {
 
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <span className="text-5xl">📁</span>
-            <p className="mt-4 text-sm font-light text-white/60">Proiectele tale vor apărea aici.</p>
+            <FolderIcon className="w-12 h-12 text-white/30" />
+            <p className="mt-4 text-sm font-light text-white/60">Your projects will appear here.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

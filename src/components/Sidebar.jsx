@@ -181,11 +181,6 @@ export default function Sidebar() {
               </div>
             )}
 
-            <button onClick={() => router.push("/projects")} className={`mt-3 mx-4 flex cursor-pointer items-center justify-center gap-2 rounded-[5px] border border-[rgba(255,255,255,0.15)] px-2 py-1.5 text-[12px] font-normal transition-all ${isProjects ? "border-[#A64D79] text-white" : "text-white/60 hover:border-[#A64D79] hover:text-white"}`}>
-              <FolderIcon className="w-3.5 h-3.5" />
-              Enter Projects
-            </button>
-
             {menu && (
               <div
                 className="fixed z-[80] min-w-[170px] rounded-xl bg-[#232326]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]"

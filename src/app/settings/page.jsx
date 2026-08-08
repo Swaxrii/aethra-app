@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSession, setSession } from "@/lib/session";
+import { getSession, setSession, getModelPref, setModelPref } from "@/lib/session";
 
 const SECTIONS = [
   { id: "profile", label: "Profile" },
@@ -36,6 +36,8 @@ export default function SettingsPage() {
       setName(fullName || user.email.split("@")[0]);
       setEmail(user.email);
     }
+    const pref = getModelPref();
+    if (pref) setModel(pref);
   }, []);
 
   const temperatureLabel = temperature < 0.4 ? "Focused" : temperature < 1.1 ? "Balanced" : temperature < 1.6 ? "Creative" : "Wild";
@@ -63,6 +65,7 @@ export default function SettingsPage() {
       }
       setPassword("");
       setSession(data.user);
+      setModelPref(model);
       setTimeout(() => setSaving(false), 1000);
     } catch {
       setError("Network error. Please try again.");

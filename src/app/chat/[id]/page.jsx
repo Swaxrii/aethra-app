@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getProject, addMessage, touchProject } from "@/lib/store";
+import { getModelPref } from "@/lib/session";
 
 const MODELS = ["Aethra 1.0", "Aethra 1.1"];
 
@@ -12,7 +13,7 @@ export default function ChatPage() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
-  const [model, setModel] = useState(MODELS[0].value);
+  const [model, setModel] = useState(MODELS.includes(getModelPref()) ? getModelPref() : MODELS[0]);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const scrollRef = useRef(null);

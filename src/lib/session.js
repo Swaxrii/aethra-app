@@ -14,3 +14,16 @@ export function setSession(user) {
 export function clearSession() {
   localStorage.removeItem("aethra_user");
 }
+
+export function getModelPref() {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("aethra_model");
+  } catch {
+    return null;
+  }
+}
+
+export function setModelPref(model) {
+  localStorage.setItem("aethra_model", model);
+}

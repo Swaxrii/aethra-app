@@ -20,6 +20,15 @@ function lastActivity(p) {
   return p.lastAccessed || p.createdAt || Date.now();
 }
 
+function readModelPref() {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("aethra_model");
+  } catch {
+    return null;
+  }
+}
+
 export function isRecent(p) {
   return Date.now() - lastActivity(p) < DAY;
 }
@@ -31,7 +40,7 @@ export function getRecentProjects() {
 }
 
 export function createProject(prompt) {
-  const model = "Aethra 1.0";
+  const model = readModelPref() || "Aethra 1.0";
   const now = Date.now();
   const project = {
     id: "p-" + now,
