@@ -42,6 +42,19 @@ export function addMessage(id, text, model) {
   saveProjects(list);
 }
 
+export function renameProject(id, title) {
+  const list = loadProjects();
+  const project = list.find((p) => p.id === id);
+  if (!project || !title.trim()) return;
+  project.title = title.trim();
+  saveProjects(list);
+}
+
+export function deleteProject(id) {
+  const list = loadProjects().filter((p) => p.id !== id);
+  saveProjects(list);
+}
+
 export function aiReply(prompt, model) {
   const t = prompt.toLowerCase();
   if (t.includes("build") || t.includes("landing") || t.includes("page")) return "I'll help you build that. Start with a clean component structure and a mobile-first layout, then layer in the styling with Tailwind. I can scaffold the sections one by one as you need them.";
