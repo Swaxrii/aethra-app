@@ -62,21 +62,21 @@ export default function ProjectsPage() {
     <div className="w-full h-full overflow-y-auto px-6 py-10">
       <div className="max-w-[960px] mx-auto">
         <header className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">Projects</h1>
-          <p className="mt-1 text-sm font-light text-white/55">All your projects, stored permanently.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white animate-rise">Projects</h1>
+          <p className="mt-1 text-sm font-light text-white/55 animate-rise-1">All your projects, stored permanently.</p>
         </header>
 
         {projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-20 text-center animate-rise">
             <FolderIcon className="w-12 h-12 text-white/30" />
             <p className="mt-4 text-sm font-light text-white/60">Your projects will appear here.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((p) => {
+            {projects.map((p, i) => {
               if (editingId === p.id) {
                 return (
-                  <div key={p.id} className="rounded-xl bg-white/[0.03] border border-[#A64D79] p-5 flex flex-col gap-3">
+                  <div key={p.id} style={{ animationDelay: `${i * 0.06}s` }} className="animate-rise rounded-xl bg-white/[0.03] border border-[#A64D79] p-5 flex flex-col gap-3">
                     <span className="text-xs font-light text-white/45">Rename project</span>
                     <input
                       autoFocus
@@ -98,7 +98,8 @@ export default function ProjectsPage() {
               return (
                 <div
                   key={p.id}
-                  className="group relative rounded-xl bg-white/[0.03] border border-white/10 p-5 flex flex-col gap-4 transition-all duration-300 hover:border-[#A64D79]/50 hover:bg-white/[0.05] cursor-pointer"
+                  style={{ animationDelay: `${i * 0.06}s` }}
+                  className="animate-rise group relative rounded-xl bg-white/[0.03] border border-white/10 p-5 flex flex-col gap-4 transition-all duration-300 hover:border-[#A64D79]/50 hover:bg-white/[0.05] cursor-pointer"
                   onClick={() => openProject(p.id)}>
                   <div className="flex items-start justify-between gap-3">
                     <span className="min-w-0">
