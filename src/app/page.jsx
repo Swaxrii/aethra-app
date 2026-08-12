@@ -53,12 +53,12 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
-      <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-tight text-white">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-tight text-white animate-rise">
         <span className="font-extrabold">GOOD MORNING,</span> <span className="font-extralight">{firstName}</span>
       </h1>
-      <p className="mt-1 text-sm sm:text-base md:text-lg font-extralight text-white/60">What would you like to build today? Type a command or a task</p>
+      <p className="mt-1 text-sm sm:text-base md:text-lg font-extralight text-white/60 animate-rise-1">What would you like to build today? Type a command or a task</p>
 
-      <div className="mt-6 sm:mt-8 relative w-full max-w-[850px]">
+      <div className="mt-6 sm:mt-8 relative w-full max-w-[850px] animate-rise-2">
         <svg width="16" height="16" viewBox="0 0 66 66" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[18px] sm:h-[18px] absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
           <path d="M22.2517 13.2C16.7507 13.2 12.2754 17.678 12.2754 23.1822C12.2754 23.9468 12.8949 24.5666 13.6589 24.5666C14.4231 24.5666 15.0425 23.9468 15.0425 23.1822C15.0425 19.2046 18.2765 15.9687 22.2517 15.9687C23.0158 15.9687 23.6352 15.3489 23.6352 14.5843C23.6352 13.8197 23.0158 13.2 22.2517 13.2Z" fill="currentColor" />
           <path
@@ -90,12 +90,13 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="mt-4 w-full max-w-[850px] grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-        {SUGGESTIONS.map((s) => (
+      <div className="mt-4 w-full max-w-[850px] grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 animate-rise-3">
+        {SUGGESTIONS.map((s, i) => (
           <button
             key={s.title}
             onClick={() => openSuggestion(s)}
-            className="h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
+            style={{ animationDelay: `${0.35 + i * 0.08}s` }}
+            className="animate-rise h-[72px] sm:h-[80px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] shadow-[inset_0px_-5px_4px_rgba(0,0,0,0.25)] px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col justify-end text-left transition-all duration-500 cursor-pointer hover:scale-[1.015] hover:border-[#A64D79] hover:shadow-[0_0_14px_rgba(166,77,121,0.12),inset_0px_-5px_4px_rgba(0,0,0,0.25)]">
             <p className="text-xs sm:text-sm font-normal text-white truncate">{s.title}</p>
             <p className="text-[10px] sm:text-xs font-extralight text-white/60 truncate">{s.sub}</p>
           </button>

@@ -7,6 +7,11 @@
   --animate-fade-up: fade-up 0.3s ease-out;
   --animate-fade-up-stagger: fade-up 0.3s ease-out 0.08s both;
   --animate-pop: pop 0.2s ease-out;
+  --animate-slide-in-left: slide-in-left 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-rise: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-rise-1: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  --animate-rise-2: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+  --animate-rise-3: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
 }
 
 @keyframes fade-in {
@@ -39,6 +44,17 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
