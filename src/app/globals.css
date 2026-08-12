@@ -12,6 +12,8 @@
   --animate-rise-1: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
   --animate-rise-2: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
   --animate-rise-3: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+  --animate-fade-in-slow: fade-in 0.2s ease-out both;
+  --animate-drop-in: drop-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes fade-in {
@@ -55,6 +57,17 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
