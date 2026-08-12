@@ -81,12 +81,12 @@ export default function SettingsPage() {
     <div className="w-full h-full overflow-y-auto px-6 py-10">
       <div className="max-w-[960px] mx-auto">
         <header className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">Settings</h1>
-          <p className="mt-1 text-sm font-light text-white/55">Customize your experience. Changes are applied instantly.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white animate-rise">Settings</h1>
+          <p className="mt-1 text-sm font-light text-white/55 animate-rise-1">Customize your experience. Changes are applied instantly.</p>
         </header>
 
         <div className="flex flex-col md:flex-row gap-6">
-          <nav className="md:w-52 flex-shrink-0">
+          <nav className="md:w-52 flex-shrink-0 animate-rise-2">
             <div className="flex md:flex-col gap-1">
               {SECTIONS.map((s) => {
                 const on = active === s.id;
@@ -102,7 +102,7 @@ export default function SettingsPage() {
           <div className="flex-1 min-w-0 space-y-5">
             {active === "profile" && (
               <>
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise">
                   <div className="flex items-center gap-5">
                     <div className="relative flex-shrink-0">
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center text-white font-bold text-2xl">{name[0] || "A"}</div>
@@ -114,7 +114,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise-1">
                   <h3 className="text-sm font-semibold text-white/90 mb-4">Personal details</h3>
                   <div className="space-y-4">
                     <Field label="Display name">
@@ -130,7 +130,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end animate-rise-2">
                   <PrimaryButton onClick={save} saving={saving}>
                     Save
                   </PrimaryButton>
@@ -140,13 +140,13 @@ export default function SettingsPage() {
 
             {active === "model" && (
               <>
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise">
                   <h3 className="text-sm font-semibold text-white/90 mb-4">Select model</h3>
                   <div className="space-y-2.5">
-                    {MODELS.map((m) => {
+                    {MODELS.map((m, i) => {
                       const on = model === m.value;
                       return (
-                        <button key={m.value} onClick={() => setModel(m.value)} className={`w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${on ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" : "border-white/10 hover:border-white/20"}`}>
+                        <button key={m.value} onClick={() => setModel(m.value)} style={{ animationDelay: `${0.1 + i * 0.07}s` }} className={`animate-rise w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${on ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" : "border-white/10 hover:border-white/20"}`}>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-white">{m.value}</span>
@@ -161,7 +161,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise-1">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-white/90">Creativity</h3>
                     <span className="text-xs text-[#A64D79] font-medium">{temperatureLabel}</span>
@@ -185,7 +185,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise-2">
                   <h3 className="text-sm font-semibold text-white/90 mb-4">Response preferences</h3>
                   <div className="space-y-4">
                     <Field label="Response length">
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end animate-rise-3">
                   <PrimaryButton onClick={save} saving={saving}>
                     Save
                   </PrimaryButton>
