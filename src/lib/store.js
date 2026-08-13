@@ -129,14 +129,13 @@ export function importProject(payload) {
   return project;
 }
 
-export function projectToHTML(project) {
+export function projectToHTML(project, userName) {
   const rows = (project.messages || [])
     .map((m) => {
-      const role = m.role === "user" ? "User" : "Aethra AI";
-      const color = m.role === "user" ? "#A64D79" : "transparent";
+      const role = m.role === "user" ? userName || "You" : "Aethra AI";
       const classRole = m.role === "user" ? "user" : "ai";
       return `<div class="msg ${classRole}">
-        <div class="meta">${role}</div>
+        <div class="meta">${escapeHTML(role)}</div>
         <p>${escapeHTML(m.text)}</p>
       </div>`;
     })
@@ -161,8 +160,8 @@ export function projectToHTML(project) {
       .wrap { max-width: 720px; margin: 0 auto; }
       h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; }
       .model { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 28px; }
-      .msg { margin-bottom: 16px; border-radius: 12px; padding: 12px 16px; background: ${color}; border: 1px solid rgba(255,255,255,0.1); }
-      .msg.user { border-color: #A64D79; }
+      .msg { margin-bottom: 16px; border-radius: 12px; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+      .msg.user { background: #A64D79; border-color: #A64D79; }
       .meta { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
       .msg p { margin: 0; white-space: pre-wrap; font-size: 15px; }
       @media print { body { background: #fff; color: #000; } .msg { border-color: #ccc; } .meta { color: #666; } }

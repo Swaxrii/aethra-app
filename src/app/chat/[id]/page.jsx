@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getProject, addMessage, touchProject, projectToHTML } from "@/lib/store";
-import { getModelPref } from "@/lib/session";
+import { getModelPref, getSession } from "@/lib/session";
 
 const MODELS = ["Aethra 1.0", "Aethra 1.1"];
 
@@ -29,6 +29,18 @@ export default function ChatPage() {
   }, [id]);
 
   useEffect(() => {
+    const onStore = () => {
+      const p = getProject(id);
+      if (p) {
+        setProject(p);
+        setModel(p.model);
+      }
+    };
+    window.addEventListener("aethra-projects", onStore);
+    return () => window.removeEventListener("aethra-projects", onStore);
+  }, [id]);
+
+  useEffect(() => {
     if (!loading && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -43,8 +55,16 @@ export default function ChatPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const safeName = () => (project?.title ? project.title.replace(/[\\/:*?"<>|\n]+/g, " ").trim().slice(0, 60) : "conversation") || "conversation";
+
+  const userName = () => {
+    const u = getSession();
+    if (!u) return "You";
+    return [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || u.email?.split("@")[0] || "You";
+  };
+
   const download = (filename, content, type) => {
-    const blob = new Blob([content], { type });
+    const blob = new Blob([content], { type: `${type};charset=utf-8` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -52,18 +72,25 @@ export default function ChatPage() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  const exportHTML = () => download(`${project?.title || "conversation"}.html`, projectToHTML(project), "text/html");
+  const exportHTML = () => download(`${safeName()}.html`, projectToHTML(project, userName()), "text/html");
 
   const exportPDF = () => {
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(projectToHTML(project));
-    win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 300);
+    const html = projectToHTML(project, userName());
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+    if (!win) {
+      URL.revokeObjectURL(url);
+      return;
+    }
+    const print = () => {
+      win.print();
+      URL.revokeObjectURL(url);
+    };
+    win.addEventListener("load", print);
   };
 
   const send = () => {
@@ -94,7 +121,7 @@ export default function ChatPage() {
     <div className="flex flex-col w-full h-full overflow-hidden">
       <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 animate-rise">
         <div className="max-w-[820px] mx-auto flex items-center justify-between gap-3">
-          <h1 className="text-base sm:text-lg font-bold tracking-tight text-white truncate">{project.title}</h1>
+          <h1 className="flex-1 min-w-0 text-base sm:text-lg font-bold tracking-tight text-white truncate">{project.title}</h1>
           <div ref={exportRef} className="relative flex-shrink-0">
             <button type="button" onClick={() => setExportOpen(!exportOpen)} className="h-8 sm:h-9 px-3 rounded-lg bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] hover:text-white cursor-pointer">
               <span className="flex items-center gap-1.5">
