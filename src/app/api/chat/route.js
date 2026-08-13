@@ -18,7 +18,8 @@ export async function POST(req) {
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const model = typeof body.model === "string" && body.model ? body.model : process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-lightning-30b-a3b";
 
-  const temperature = Number.isFinite(body.temperature) ? body.temperature : 1;
+  const rawTemperature = Number.isFinite(body.temperature) ? body.temperature : 0.7;
+  const temperature = Math.min(1.2, Math.max(0, rawTemperature));
 
   if (!process.env.NVIDIA_API_KEY) {
     return Response.json({ error: "NVIDIA_API_KEY is not configured" }, { status: 500 });
@@ -28,7 +29,9 @@ export async function POST(req) {
     return Response.json({ error: "No messages provided" }, { status: 400 });
   }
 
-  const payloadMessages = [];
+  const payloadMessages = [
+    { role: "system", content: "You are Aethra, a helpful and concise AI assistant. Always reply in the same language the user writes in, keep answers clean and well-structured." },
+  ];
   if (typeof body.system === "string" && body.system.trim()) {
     payloadMessages.push({ role: "system", content: body.system.trim() });
   }
