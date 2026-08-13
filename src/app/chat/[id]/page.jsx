@@ -101,7 +101,7 @@ export default function ChatPage() {
         <div className="max-w-[820px] mx-auto flex items-center gap-2 sm:gap-3">
           <input
             type="text"
-            placeholder="Ask aethra or type /command"
+            placeholder="Ask aethra anything..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {

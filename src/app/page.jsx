@@ -69,7 +69,7 @@ export default function Home() {
         </svg>
         <input
           type="text"
-          placeholder="Ask aethra or type /command"
+          placeholder="Ask aethra anything..."
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
