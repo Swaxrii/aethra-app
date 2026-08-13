@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { getProject, addMessage, touchProject } from "@/lib/store";
+import { getProject, addMessage, touchProject, projectToHTML } from "@/lib/store";
 import { getModelPref } from "@/lib/session";
 
 const MODELS = ["Aethra 1.0", "Aethra 1.1"];
@@ -15,8 +15,10 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState(MODELS.includes(getModelPref()) ? getModelPref() : MODELS[0]);
   const [open, setOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const ref = useRef(null);
   const scrollRef = useRef(null);
+  const exportRef = useRef(null);
 
   useEffect(() => {
     const p = getProject(id);
@@ -35,10 +37,34 @@ export default function ChatPage() {
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (exportRef.current && !exportRef.current.contains(e.target)) setExportOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const download = (filename, content, type) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportHTML = () => download(`${project?.title || "conversation"}.html`, projectToHTML(project), "text/html");
+
+  const exportPDF = () => {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(projectToHTML(project));
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
+  };
 
   const send = () => {
     const text = input.trim();
@@ -66,6 +92,29 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
+      <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 animate-rise">
+        <div className="max-w-[820px] mx-auto flex items-center justify-between gap-3">
+          <h1 className="text-base sm:text-lg font-bold tracking-tight text-white truncate">{project.title}</h1>
+          <div ref={exportRef} className="relative flex-shrink-0">
+            <button type="button" onClick={() => setExportOpen(!exportOpen)} className="h-8 sm:h-9 px-3 rounded-lg bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] hover:text-white cursor-pointer">
+              <span className="flex items-center gap-1.5">
+                Export
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 ${exportOpen ? "rotate-180" : ""}`}>
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </button>
+            {exportOpen && (
+              <div className="absolute z-30 right-0 top-[42px] w-[170px] rounded-[12px] bg-[#2A2A2D] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1 animate-drop-in">
+                <button type="button" onClick={() => { exportHTML(); setExportOpen(false); }} className="w-full text-left rounded-[10px] px-3.5 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">Download as HTML</button>
+                <button type="button" onClick={() => { exportPDF(); setExportOpen(false); }} className="w-full text-left rounded-[10px] px-3.5 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">Save as PDF</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="h-px flex-shrink-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15)_15%,rgba(255,255,255,0.15)_85%,transparent)]" />
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-6 py-6 sm:py-8">
         <div className="max-w-[820px] mx-auto space-y-6 sm:space-y-8">
           {project.messages.map((m, i) =>
@@ -93,8 +142,8 @@ export default function ChatPage() {
               </div>
             ),
           )}
+          </div>
         </div>
-      </div>
 
       <div className="relative px-3 sm:px-6 py-3 sm:py-4">
         <div className="absolute top-0 left-0 right-0 h-px bg-[linear-gradient(90deg,transparent,rgba(69,69,69,0.4)_12%,rgba(69,69,69,0.4)_88%,transparent)]" />
@@ -146,4 +195,15 @@ export default function ChatPage() {
       </div>
     </div>
   );
+}
+
+function parseHTMLConversation(html, title) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const messages = Array.from(doc.querySelectorAll(".msg")).map((el) => {
+    const isUser = Array.from(el.classList).includes("user");
+    const text = (el.querySelector("p")?.textContent || "").trim();
+    return { role: isUser ? "user" : "ai", text };
+  });
+  const model = doc.querySelector(".model")?.textContent?.trim() || "Aethra 1.0";
+  return { title: title || "Imported conversation", model, messages };
 }

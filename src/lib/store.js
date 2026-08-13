@@ -94,6 +94,99 @@ export function deleteProject(id) {
   saveProjects(list);
 }
 
+export function projectToJSON(project) {
+  return JSON.stringify(
+    {
+      app: "aethra",
+      version: 1,
+      title: project.title,
+      model: project.model,
+      createdAt: project.createdAt,
+      messages: project.messages,
+    },
+    null,
+    2,
+  );
+}
+
+export function importProject(payload) {
+  if (!payload || !Array.isArray(payload.messages)) throw new Error("Invalid conversation file");
+  const now = Date.now();
+  const project = {
+    id: "p-" + now,
+    title: (payload.title && String(payload.title).trim()) || "Imported conversation",
+    model: (payload.model && String(payload.model)) || "Aethra 1.0",
+    createdAt: payload.createdAt || now,
+    lastAccessed: now,
+    messages: payload.messages.map((m) => ({
+      role: m.role === "user" ? "user" : "ai",
+      text: String(m.text || ""),
+    })),
+  };
+  const list = loadProjects();
+  list.unshift(project);
+  saveProjects(list);
+  return project;
+}
+
+export function projectToHTML(project) {
+  const rows = (project.messages || [])
+    .map((m) => {
+      const role = m.role === "user" ? "User" : "Aethra AI";
+      const color = m.role === "user" ? "#A64D79" : "transparent";
+      const classRole = m.role === "user" ? "user" : "ai";
+      return `<div class="msg ${classRole}">
+        <div class="meta">${role}</div>
+        <p>${escapeHTML(m.text)}</p>
+      </div>`;
+    })
+    .join("\n      ");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHTML(project.title)}</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 40px 24px;
+        background: #1a1a1d;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+      }
+      .wrap { max-width: 720px; margin: 0 auto; }
+      h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; }
+      .model { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 28px; }
+      .msg { margin-bottom: 16px; border-radius: 12px; padding: 12px 16px; background: ${color}; border: 1px solid rgba(255,255,255,0.1); }
+      .msg.user { border-color: #A64D79; }
+      .meta { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
+      .msg p { margin: 0; white-space: pre-wrap; font-size: 15px; }
+      @media print { body { background: #fff; color: #000; } .msg { border-color: #ccc; } .meta { color: #666; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>${escapeHTML(project.title)}</h1>
+      <div class="model">${escapeHTML(project.model || "Aethra AI")}</div>
+      ${rows}
+    </div>
+  </body>
+</html>`;
+}
+
+function escapeHTML(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function readPref(key, fallback) {
   if (typeof window === "undefined") return fallback;
   try {
