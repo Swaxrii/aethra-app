@@ -48,10 +48,7 @@ export function createProject(prompt) {
     model,
     createdAt: now,
     lastAccessed: now,
-    messages: [
-      { role: "user", text: prompt },
-      { role: "ai", text: aiReply(prompt, model) },
-    ],
+    messages: [{ role: "user", text: prompt }],
   };
   const list = loadProjects();
   list.unshift(project);
@@ -77,7 +74,14 @@ export function addMessage(id, text, model) {
   if (!project) return;
   project.model = model;
   project.messages.push({ role: "user", text });
-  project.messages.push({ role: "ai", text: aiReply(text, model) });
+  saveProjects(list);
+}
+
+export function addAIMessage(id, text) {
+  const list = loadProjects();
+  const project = list.find((p) => p.id === id);
+  if (!project) return;
+  project.messages.push({ role: "ai", text });
   saveProjects(list);
 }
 

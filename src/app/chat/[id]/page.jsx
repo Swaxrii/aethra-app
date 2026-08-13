@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { getProject, addMessage, touchProject, projectToHTML } from "@/lib/store";
+import { getProject, addMessage, addAIMessage, touchProject, projectToHTML } from "@/lib/store";
 import { getModelPref, getSession } from "@/lib/session";
+import { streamAIReply } from "@/lib/ai";
 
 const MODELS = ["Aethra 1.0", "Aethra 1.1"];
 
@@ -19,6 +20,11 @@ export default function ChatPage() {
   const ref = useRef(null);
   const scrollRef = useRef(null);
   const exportRef = useRef(null);
+  const [streaming, setStreaming] = useState(false);
+  const [streamText, setStreamText] = useState("");
+  const [streamError, setStreamError] = useState("");
+  const abortRef = useRef(null);
+  const generatedCountRef = useRef(0);
 
   useEffect(() => {
     const p = getProject(id);
@@ -77,13 +83,46 @@ export default function ChatPage() {
 
   const exportHTML = () => download(`${safeName()}.html`, projectToHTML(project, userName()), "text/html");
 
+  const generate = useCallback(async () => {
+    setStreaming(true);
+    setStreamError("");
+    setStreamText("");
+    generatedCountRef.current = getProject(id)?.messages.length || 0;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      const payload = getProject(id)
+        ?.messages.map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })) || [];
+      const reply = await streamAIReply(payload, {
+        signal: controller.signal,
+        onToken: (t) => setStreamText(t),
+      });
+      addAIMessage(id, reply);
+    } catch (err) {
+      if (err.name !== "AbortError") setStreamError(err.message || "Something went wrong");
+    } finally {
+      abortRef.current = null;
+      setStreaming(false);
+      setProject(getProject(id));
+    }
+  }, [id]);
+
   const send = () => {
     const text = input.trim();
-    if (!text) return;
+    if (!text || streaming) return;
     addMessage(id, text, model);
     setProject(getProject(id));
     setInput("");
   };
+
+  const lastRole = project?.messages[project.messages.length - 1]?.role;
+  const messageCount = project?.messages.length || 0;
+
+  useEffect(() => {
+    if (lastRole === "user" && messageCount > generatedCountRef.current) {
+      generate();
+    }
+  }, [lastRole, messageCount, generate]);
 
   if (loading) {
     return (
@@ -151,6 +190,28 @@ export default function ChatPage() {
                 <div className="max-w-[85%] sm:max-w-[75%] rounded-[14px] bg-[#A64D79] px-3.5 sm:px-4 py-2.5 text-sm sm:text-[15px] leading-relaxed text-white font-light break-words">{m.text}</div>
               </div>
             ),
+          )}
+          {streaming && (
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0 pt-0.5">
+                {streamError ? (
+                  <div className="text-sm text-red-400 font-light break-words whitespace-pre-wrap">{streamError}</div>
+                ) : streamText ? (
+                  <div className="text-sm sm:text-[15px] leading-relaxed text-white/90 font-light whitespace-pre-wrap break-words">{streamText}</div>
+                ) : (
+                  <div className="flex items-center gap-2 text-white/50">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" style={{ animationDelay: "0.15s" }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" style={{ animationDelay: "0.3s" }} />
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           </div>
         </div>
