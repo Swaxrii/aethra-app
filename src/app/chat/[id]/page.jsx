@@ -77,22 +77,6 @@ export default function ChatPage() {
 
   const exportHTML = () => download(`${safeName()}.html`, projectToHTML(project, userName()), "text/html");
 
-  const exportPDF = () => {
-    const html = projectToHTML(project, userName());
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url, "_blank");
-    if (!win) {
-      URL.revokeObjectURL(url);
-      return;
-    }
-    const print = () => {
-      win.print();
-      URL.revokeObjectURL(url);
-    };
-    win.addEventListener("load", print);
-  };
-
   const send = () => {
     const text = input.trim();
     if (!text) return;
@@ -134,7 +118,6 @@ export default function ChatPage() {
             {exportOpen && (
               <div className="absolute z-30 right-0 top-[42px] w-[170px] rounded-[12px] bg-[#2A2A2D] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1 animate-drop-in">
                 <button type="button" onClick={() => { exportHTML(); setExportOpen(false); }} className="w-full text-left rounded-[10px] px-3.5 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">Download as HTML</button>
-                <button type="button" onClick={() => { exportPDF(); setExportOpen(false); }} className="w-full text-left rounded-[10px] px-3.5 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">Save as PDF</button>
               </div>
             )}
           </div>
