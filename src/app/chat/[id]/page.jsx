@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { getProject, addMessage, addAIMessage, touchProject, projectToHTML } from "@/lib/store";
 import { getModelPref, getSession } from "@/lib/session";
 import { streamAIReply } from "@/lib/ai";
+import Markdown from "@/components/Markdown";
 
 const MODELS = ["Aethra 1.0", "Aethra 1.1"];
 
@@ -183,7 +184,7 @@ export default function ChatPage() {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 pt-0.5">
-                  <div className="text-sm sm:text-[15px] leading-relaxed text-white/90 font-light whitespace-pre-wrap break-words">{m.text}</div>
+                  <Markdown text={m.text} />
                 </div>
               </div>
             ) : (
@@ -203,7 +204,7 @@ export default function ChatPage() {
                 {streamError ? (
                   <div className="text-sm text-red-400 font-light break-words whitespace-pre-wrap">{streamError}</div>
                 ) : streamText ? (
-                  <div className="text-sm sm:text-[15px] leading-relaxed text-white/90 font-light whitespace-pre-wrap break-words">{streamText}</div>
+                  <Markdown text={streamText} />
                 ) : (
                   <div className="flex items-center gap-2 text-white/50">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" />
