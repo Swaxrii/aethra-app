@@ -91,23 +91,35 @@ export default function ChatPage() {
     generatedCountRef.current = getProject(id)?.messages.length || 0;
     const controller = new AbortController();
     abortRef.current = controller;
+    let partial = "";
     try {
       const payload = getProject(id)
         ?.messages.map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })) || [];
       const reply = await streamAIReply(payload, {
         model,
         signal: controller.signal,
-        onToken: (t) => setStreamText(t),
+        onToken: (t) => {
+          partial = t;
+          setStreamText(t);
+        },
       });
       addAIMessage(id, reply);
     } catch (err) {
-      if (err.name !== "AbortError") setStreamError(err.message || "Something went wrong");
+      if (err.name === "AbortError") {
+        if (partial.trim()) addAIMessage(id, partial);
+      } else {
+        setStreamError(err.message || "Something went wrong");
+      }
     } finally {
       abortRef.current = null;
       setStreaming(false);
       setProject(getProject(id));
     }
   }, [id, model]);
+
+  const stop = () => {
+    if (abortRef.current) abortRef.current.abort();
+  };
 
   const send = () => {
     const text = input.trim();
@@ -232,6 +244,19 @@ export default function ChatPage() {
             onFocus={() => setOpen(false)}
             className="flex-1 min-w-0 h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3.5 sm:px-4 text-sm text-white font-light placeholder:text-white/70 outline-none transition-all duration-500 focus:border-[#A64D79]"
           />
+          {streaming && (
+            <button
+              type="button"
+              onClick={stop}
+              aria-label="Stop generating"
+              className="flex-shrink-0 h-[46px] sm:h-[44px] px-3.5 rounded-[10px] bg-[#A64D79]/15 border border-[#A64D79]/50 flex items-center gap-2 text-sm font-medium text-[#f4a3c7] transition-all duration-300 hover:bg-[#A64D79]/25 cursor-pointer animate-pop"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
+              Stop
+            </button>
+          )}
           <div ref={ref} className="relative flex-shrink-0">
             <button type="button" onClick={() => setOpen(!open)} aria-label="Select AI model" className="h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3 sm:px-3.5 flex items-center justify-center gap-2 text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] cursor-pointer">
               <span className="max-w-[110px] truncate">{model}</span>
