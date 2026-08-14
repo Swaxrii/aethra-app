@@ -6,12 +6,13 @@ const LENGTH_GUIDES = {
   Detailed: "Be thorough and detailed in your answer.",
 };
 
-export async function streamAIReply(messages, { onToken, signal } = {}) {
+export async function streamAIReply(messages, { model, onToken, signal } = {}) {
   const temperature = getTemperaturePref();
   const length = getResponseLengthPref();
 
   const body = {
     messages,
+    model,
     temperature,
     ...(length && LENGTH_GUIDES[length] ? { system: LENGTH_GUIDES[length] } : {}),
   };

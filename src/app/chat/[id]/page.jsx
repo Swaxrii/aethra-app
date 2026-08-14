@@ -94,6 +94,7 @@ export default function ChatPage() {
       const payload = getProject(id)
         ?.messages.map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })) || [];
       const reply = await streamAIReply(payload, {
+        model,
         signal: controller.signal,
         onToken: (t) => setStreamText(t),
       });
@@ -105,7 +106,7 @@ export default function ChatPage() {
       setStreaming(false);
       setProject(getProject(id));
     }
-  }, [id]);
+  }, [id, model]);
 
   const send = () => {
     const text = input.trim();

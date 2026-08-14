@@ -7,6 +7,34 @@ const client = new OpenAI({
   baseURL: process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1",
 });
 
+// Maps the user-facing Aethra versions to the real NVIDIA NIM models
+// and per-model tuning. Aethra 1.0 is fast and concise: a low token
+// budget keeps it from drifting into noise. Aethra 1.1 reasons deeply,
+// so it gets a larger budget and a lower temperature for precision.
+const MODEL_CONFIG = {
+  "Aethra 1.0": {
+    model: process.env.NVIDIA_MODEL_FAST || "meta/llama-3.1-8b-instruct",
+    maxTokens: 512,
+    temperatureCap: 0.6,
+  },
+  "Aethra 1.1": {
+    model: process.env.NVIDIA_MODEL_REASONING || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    maxTokens: 16384,
+    temperatureCap: 1.2,
+  },
+};
+
+function resolveModel(body) {
+  const version = typeof body.model === "string" && MODEL_CONFIG[body.model] ? body.model : "Aethra 1.0";
+  const config = MODEL_CONFIG[version];
+  return {
+    version,
+    model: config.model,
+    maxTokens: config.maxTokens,
+    temperatureCap: config.temperatureCap,
+  };
+}
+
 export async function POST(req) {
   let body;
   try {
@@ -16,10 +44,10 @@ export async function POST(req) {
   }
 
   const messages = Array.isArray(body.messages) ? body.messages : [];
-  const model = typeof body.model === "string" && body.model ? body.model : process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-lightning-30b-a3b";
+  const { version, model, maxTokens, temperatureCap } = resolveModel(body);
 
   const rawTemperature = Number.isFinite(body.temperature) ? body.temperature : 0.7;
-  const temperature = Math.min(1.2, Math.max(0, rawTemperature));
+  const temperature = Math.min(temperatureCap, Math.max(0, rawTemperature));
 
   if (!process.env.NVIDIA_API_KEY) {
     return Response.json({ error: "NVIDIA_API_KEY is not configured" }, { status: 500 });
@@ -30,7 +58,13 @@ export async function POST(req) {
   }
 
   const payloadMessages = [
-    { role: "system", content: "You are Aethra, a helpful and concise AI assistant. Always reply in the same language the user writes in, keep answers clean and well-structured." },
+    {
+      role: "system",
+      content:
+        version === "Aethra 1.1"
+          ? "You are Aethra, a highly precise AI assistant. Reason carefully before answering and always reply in the same language the user writes in. Provide accurate, well-structured answers."
+          : "You are Aethra, a fast and concise AI assistant. Always reply in the same language the user writes in. Give short, simple, clear answers — only the essential information, without filler.",
+    },
   ];
   if (typeof body.system === "string" && body.system.trim()) {
     payloadMessages.push({ role: "system", content: body.system.trim() });
@@ -43,7 +77,7 @@ export async function POST(req) {
       messages: payloadMessages,
       temperature,
       top_p: 0.95,
-      max_tokens: 16384,
+      max_tokens: maxTokens,
       stream: true,
     });
 
