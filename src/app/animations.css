@@ -1,0 +1,107 @@
+/* ============================================================
+   Animations
+   Toate animațiile aplicației. Expoate utilitare Tailwind
+   (ex: `animate-fade-up`) și keyframes-urile folosite de ele.
+   Fișier importat din globals.css — nu adăuga importuri aici.
+   ============================================================ */
+
+@theme inline {
+  /* --- Tranziții scurte (hover / micro-interacțiuni) --- */
+
+  /* Fade rapid + ușoară scalare — folosit la meniuri dropdown */
+  --animate-fade-in: fade-in 0.12s ease-out;
+  /* Slide-up scurt + fade — pentru elemente care apar în flux */
+  --animate-fade-up: fade-up 0.3s ease-out;
+  /* Fade-up cu delay — pentru listele care apar treptat */
+  --animate-fade-up-stagger: fade-up 0.3s ease-out 0.08s both;
+  /* Pop scurt + fade — pentru butoane și iconițe */
+  --animate-pop: pop 0.2s ease-out;
+
+  /* --- Intrări de pagină / secțiuni --- */
+
+  /* Sidebar și conținut principal — la deschiderea aplicației */
+  --animate-slide-in-left: slide-in-left 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Fade lent — folosit pentru suprapuneri (modal, overlay) */
+  --animate-fade-in-slow: fade-in 0.2s ease-out both;
+  /* Drop-in de sus — pentru carduri și ferestre modale */
+  --animate-drop-in: drop-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  /* --- Dezvăluire pe rând (stagger) --- */
+
+  /* Ridicare lentă — baza pentru intrările în cascadă */
+  --animate-rise: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Ridicare cu întârziere crescătoare: rise-1 → rise-2 → rise-3 */
+  --animate-rise-1: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  --animate-rise-2: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+  --animate-rise-3: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* ------------------------------------------------------------
+   fade-in — apare cu o ușoară mărire; folosit la fade-in, fade-in-slow
+   ------------------------------------------------------------ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ------------------------------------------------------------
+   fade-up — urcă ușor în timp ce apare; folosit la fade-up, rise
+   ------------------------------------------------------------ */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------------
+   pop — scalare rapidă de la mic la normal; folosit la pop
+   ------------------------------------------------------------ */
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ------------------------------------------------------------
+   slide-in-left — vine din stânga; folosit la slide-in-left
+   ------------------------------------------------------------ */
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ------------------------------------------------------------
+   drop-in — coboară din partea de sus; folosit la drop-in
+   ------------------------------------------------------------ */
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
