@@ -13,14 +13,16 @@ const client = new OpenAI({
 // so it gets a larger budget and a lower temperature for precision.
 const MODEL_CONFIG = {
   "Aethra 1.0": {
-    model: process.env.NVIDIA_MODEL_FAST || "meta/llama-3.1-8b-instruct",
+    model: process.env.NVIDIA_MODEL_FAST || "meta/llama-3.2-11b-vision-instruct",
     maxTokens: 512,
     temperatureCap: 0.6,
+    reasoning: false,
   },
   "Aethra 1.1": {
     model: process.env.NVIDIA_MODEL_REASONING || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
     maxTokens: 16384,
     temperatureCap: 1.2,
+    reasoning: true,
   },
 };
 
@@ -32,6 +34,7 @@ function resolveModel(body) {
     model: config.model,
     maxTokens: config.maxTokens,
     temperatureCap: config.temperatureCap,
+    reasoning: config.reasoning,
   };
 }
 
@@ -44,7 +47,7 @@ export async function POST(req) {
   }
 
   const messages = Array.isArray(body.messages) ? body.messages : [];
-  const { version, model, maxTokens, temperatureCap } = resolveModel(body);
+  const { version, model, maxTokens, temperatureCap, reasoning } = resolveModel(body);
 
   const rawTemperature = Number.isFinite(body.temperature) ? body.temperature : 0.7;
   const temperature = Math.min(temperatureCap, Math.max(0, rawTemperature));
@@ -72,19 +75,27 @@ export async function POST(req) {
   payloadMessages.push(...messages);
 
   try {
-    const completion = await client.chat.completions.create({
+    const requestBody = {
       model,
       messages: payloadMessages,
       temperature,
       top_p: 0.95,
       max_tokens: maxTokens,
       stream: true,
-    });
+    };
+
+    if (reasoning) {
+      requestBody.reasoning_budget = maxTokens;
+      requestBody.chat_template_kwargs = { enable_thinking: true };
+    }
+
+    const completion = await client.chat.completions.create(requestBody);
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of completion) {
+            const reasoningText = chunk.choices?.[0]?.delta?.reasoning_content;
             const text = chunk.choices?.[0]?.delta?.content;
             if (text) {
               controller.enqueue(new TextEncoder().encode(text));
