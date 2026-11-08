@@ -836,22 +836,6 @@ button {
   margin-top: 24px;
   border-top: 1px solid var(--line);
 }
-.motion-choice {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-top: 28px;
-  font-size: 14px;
-}
-.motion-choice input {
-  margin-top: 4px;
-}
-.motion-choice small {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 7px;
-}
 .chat-shell {
   display: flex;
   flex-direction: column;
@@ -956,11 +940,6 @@ button {
   font-size: 10px;
   color: var(--muted);
   margin-top: 10px;
-}
-.reduce-motion * {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
 }
 @media (max-width: 767px) {
   .settings-layout {

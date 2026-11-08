@@ -11,23 +11,19 @@ import { ArrowUp, ArrowUpRight } from "lucide-react";
 const SUGGESTIONS = [
   {
     title: "Brainstorm ideas",
-    sub: "Architecture & UI design",
     prompt:
       "Brainstorm ideas for a modern web application, focusing on the architecture and UI design.",
   },
   {
     title: "Design system",
-    sub: "Components & tokens",
     prompt: "Help me create a design system with reusable components and design tokens.",
   },
   {
     title: "Generate code",
-    sub: "Full-stack features",
     prompt: "Generate code for full-stack features and explain the implementation step by step.",
   },
   {
     title: "Debug & test",
-    sub: "Performance & QA",
     prompt: "Help me debug and test my application, focusing on performance and quality assurance.",
   },
 ];
@@ -71,11 +67,8 @@ export default function Home() {
       <div className="workspace-home-inner">
         <div className="cinema-brand">
           <AethraMark size={58} />
-          <span>A E T H R A</span>
         </div>
-        <p className="cinema-overline">A LITTLE SPACE. A WORLD OF POSSIBILITIES.</p>
         <h1>Where shall we begin{firstName ? `, ${firstName}` : ""}?</h1>
-        <p className="workspace-lead">Think clearly. Explore freely. Make something meaningful.</p>
         <form
           className="workspace-composer"
           onSubmit={(e) => {

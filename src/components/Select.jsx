@@ -129,8 +129,10 @@ export default function Select({ value, options, onChange, label, className = ""
                 onPointerMove={() => setActive(index)}
                 onClick={() => choose(option)}
               >
+                <span className="select-check" aria-hidden="true">
+                  {value === option && <Check size={16} />}
+                </span>
                 <span>{option}</span>
-                {value === option && <Check size={16} />}
               </div>
             ))}
           </div>,

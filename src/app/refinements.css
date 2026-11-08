@@ -226,11 +226,6 @@
 .page-header p,
 .settings-panel > p,
 .ui-field > span,
-.motion-choice small {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #a8adba;
-}
 .workspace-composer textarea,
 .chat-composer textarea,
 .ui-input,
@@ -279,14 +274,6 @@
 }
 .settings-panel h2 {
   font-size: 22px;
-}
-.motion-choice {
-  font-size: 15px;
-  line-height: 1.5;
-}
-.motion-choice input {
-  width: 18px;
-  height: 18px;
 }
 .search-heading h2 {
   font-size: 15px;
@@ -706,5 +693,246 @@ textarea:focus-visible {
   .ambient-dust,
   .light-shaft {
     display: none;
+  }
+}
+
+.select-menu > [role="option"] {
+  justify-content: flex-start;
+  gap: 10px;
+  text-align: left;
+}
+.select-check {
+  display: flex;
+  width: 16px;
+  flex: 0 0 16px;
+}
+.settings-layout {
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 28px;
+}
+.settings-panel {
+  max-width: 640px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 4px 0;
+}
+.settings-panel .ui-field {
+  margin: 20px 0;
+}
+.settings-footer {
+  margin-top: 24px;
+  padding-top: 18px;
+}
+.workspace-home-inner {
+  max-width: 720px;
+}
+.cinema-brand {
+  margin-bottom: 24px;
+}
+.workspace-home h1 {
+  font-size: clamp(28px, 3.2vw, 40px);
+  margin-bottom: 0;
+}
+.workspace-composer {
+  margin-top: 26px;
+}
+.cinema-suggestions button {
+  background: transparent;
+  border-color: transparent;
+}
+.cinema-disclaimer {
+  margin-top: 22px;
+}
+@media (max-width: 767px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .settings-panel {
+    padding: 0;
+  }
+  .cinema-brand {
+    margin-bottom: 18px;
+  }
+  .workspace-home h1 {
+    font-size: 28px;
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --canvas: #f4f4f6;
+    --panel: #fff;
+    --panel-hover: #e9e9ee;
+    --line: #17182120;
+    --ink: #202127;
+    --muted: #616471;
+    --accent: #555965;
+  }
+  body,
+  .atmosphere {
+    background: #f4f4f6;
+    color: var(--ink);
+  }
+  .ambient-halo,
+  .light-shaft,
+  .ambient-lines,
+  .ambient-grain,
+  .ambient-dust {
+    opacity: 0.12;
+  }
+  .app-sidebar,
+  .app-sidebar.collapsed,
+  .app-sidebar.mobile.expanded {
+    background: #eeeef1;
+    border-color: #17182120;
+  }
+  .nav-brand > a,
+  .app-sidebar.expanded .nav-brand small,
+  .nav-history-item > a,
+  .nav-account > button,
+  .workspace-home h1,
+  .page-header h1,
+  .settings-panel h2,
+  .conversation-info h2,
+  .chat-header h1 {
+    color: #202127;
+  }
+  .nav-brand img,
+  .cinema-brand img,
+  .auth-panel img {
+    filter: invert(1);
+  }
+  .nav-primary [aria-current="page"],
+  .nav-primary > a:hover,
+  .nav-primary > button:hover,
+  .settings-layout > nav button[aria-pressed="true"] {
+    background: #18192310;
+    color: #202127;
+    border-color: #18192320;
+  }
+  .nav-primary [aria-current="page"]::before {
+    background: #414451;
+  }
+  .surface,
+  .workspace-composer,
+  .chat-composer form,
+  .search-dialog,
+  .select-menu,
+  .nav-popover {
+    background: #fff;
+    border-color: #17182124;
+    color: #202127;
+    box-shadow: 0 12px 32px #17182112;
+  }
+  .settings-panel {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .workspace-composer textarea,
+  .chat-composer textarea,
+  .ui-input,
+  .search-input,
+  .message-body {
+    color: #252630;
+  }
+  .ui-input,
+  .custom-select,
+  .workspace-composer-actions > .custom-select,
+  .chat-composer form > div > .custom-select {
+    background: #f8f8fa;
+    border-color: #17182128;
+    color: #252630;
+  }
+  .custom-select:hover,
+  .custom-select[aria-expanded="true"],
+  .workspace-composer-actions > .custom-select:hover,
+  .workspace-composer-actions > .custom-select[aria-expanded="true"] {
+    background: #eeeef1;
+    color: #202127;
+    border-color: #17182150;
+  }
+  .select-menu > [role="option"],
+  .search-results a {
+    color: #3f424c;
+  }
+  .select-menu > [aria-selected="true"],
+  .select-menu > .is-focused {
+    color: #171820;
+  }
+  .select-menu > .is-focused,
+  .search-results a:hover {
+    background: #17182110;
+  }
+  .select-menu svg {
+    color: #353743;
+  }
+  .page-header p,
+  .settings-panel > p,
+  .ui-field > span,
+  .cinema-disclaimer,
+  .chat-composer > p,
+  .conversation-info p,
+  .message-label,
+  .search-dialog footer {
+    color: #626571;
+  }
+  .workspace-composer textarea::placeholder,
+  .chat-composer textarea::placeholder,
+  .ui-input::placeholder {
+    color: #727580;
+  }
+  .cinema-suggestions button,
+  .icon-button,
+  .message-copy {
+    color: #595c68;
+  }
+  .cinema-suggestions button:hover,
+  .icon-button:hover {
+    color: #202127;
+    background: #1718210c;
+    border-color: #17182120;
+  }
+  .chat-header {
+    background: #f4f4f6;
+    border-color: #17182120;
+  }
+  .chat-composer {
+    background: linear-gradient(transparent, #f4f4f6 30%);
+  }
+  .chat-message.user .message-body {
+    background: #e9e9ed;
+    border-color: #17182118;
+  }
+  .chat-message.ai,
+  .conversation-list article,
+  .settings-footer,
+  .page-header,
+  .search-input,
+  .search-dialog footer {
+    border-color: #1718211c;
+  }
+  .ui-button.secondary {
+    background: #e8e8ed;
+    border-color: #17182120;
+    color: #292a33;
+  }
+  .mobile-nav-toggle {
+    background: #fff;
+    color: #202127;
+  }
+  .auth-panel > h1,
+  .auth-panel p {
+    color: #292a33;
+  }
+  .auth-panel form input {
+    color: #202127;
+    background: #fff;
+    border-color: #17182130;
+  }
+  .auth-panel form input::placeholder {
+    color: #737580;
   }
 }

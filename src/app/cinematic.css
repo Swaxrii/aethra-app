@@ -469,9 +469,6 @@ body {
   border: 1px solid transparent;
   font-size: 12px;
 }
-.motion-choice {
-  color: #c7c9d1;
-}
 .settings-footer {
   border-color: #ffffff10;
 }
@@ -698,9 +695,6 @@ body {
   .atmosphere * {
     animation: none !important;
   }
-}
-.reduce-motion .atmosphere * {
-  animation: none !important;
 }
 
 .nav-backdrop {

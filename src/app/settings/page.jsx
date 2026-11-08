@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { User, SlidersHorizontal, Palette, Save, RotateCcw } from "lucide-react";
+import { User, SlidersHorizontal, Save, RotateCcw } from "lucide-react";
 import { updateDemo } from "@/lib/localAuth";
 import Select from "@/components/Select";
 import {
@@ -22,7 +22,6 @@ export default function SettingsPage() {
   const [model, setModel] = useState("Aethra 1.0");
   const [temperature, setTemperature] = useState(0.7);
   const [length, setLength] = useState("Balanced");
-  const [motion, setMotion] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
@@ -34,11 +33,6 @@ export default function SettingsPage() {
       setModel(getModelPref() || "Aethra 1.0");
       setTemperature(getTemperaturePref());
       setLength(getResponseLengthPref());
-      try {
-        setMotion(localStorage.getItem("aethra_reduced_motion") === "true");
-      } catch {
-        setError("Browser preferences could not be read.");
-      }
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -58,10 +52,6 @@ export default function SettingsPage() {
         setTemperaturePref(Number(temperature));
         setResponseLengthPref(length);
       }
-      if (tab === "appearance") {
-        localStorage.setItem("aethra_reduced_motion", String(motion));
-        document.documentElement.classList.toggle("reduce-motion", motion);
-      }
       setFeedback("Saved in this browser.");
     } catch (err) {
       setError(err.message || "Could not save preferences.");
@@ -79,7 +69,6 @@ export default function SettingsPage() {
       setTemperature(0.7);
       setLength("Balanced");
     }
-    if (tab === "appearance") setMotion(false);
   };
   return (
     <section className="page-shell">
@@ -96,7 +85,6 @@ export default function SettingsPage() {
             {[
               ["profile", "Profile", User],
               ["model", "Assistant", SlidersHorizontal],
-              ["appearance", "Appearance", Palette],
             ].map(([id, label, Icon]) => (
               <button
                 key={id}
@@ -142,7 +130,7 @@ export default function SettingsPage() {
                   />
                 </label>
               </>
-            ) : tab === "model" ? (
+            ) : (
               <>
                 <h2>Assistant preferences</h2>
                 <p>
@@ -182,22 +170,6 @@ export default function SettingsPage() {
                     onChange={setLength}
                   />
                 </div>
-              </>
-            ) : (
-              <>
-                <h2>Appearance</h2>
-                <p>Our dark workspace is designed for comfortable reading.</p>
-                <label className="motion-choice">
-                  <input
-                    type="checkbox"
-                    checked={motion}
-                    onChange={(e) => setMotion(e.target.checked)}
-                  />
-                  <span>
-                    Reduce interface motion
-                    <small>Your system motion preference is also respected.</small>
-                  </span>
-                </label>
               </>
             )}
             {feedback && (
