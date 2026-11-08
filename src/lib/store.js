@@ -1,3 +1,4 @@
+import { writeConversations } from "./localConversations";
 const KEY = "aethra_projects";
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -12,8 +13,7 @@ export function loadProjects() {
 
 function saveProjects(list) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(list));
-  window.dispatchEvent(new CustomEvent("aethra-projects"));
+  writeConversations(list);
 }
 
 function lastActivity(p) {

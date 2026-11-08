@@ -31,6 +31,7 @@ const SUGGESTIONS = [
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState("");
+  const [error, setError] = useState("");
   const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
@@ -41,14 +42,11 @@ export default function Home() {
   const handleSend = () => {
     const text = value.trim();
     if (!text) return;
-    const project = createProject(text);
-    setValue("");
-    router.push(`/chat/${project.id}`);
+    try { const project = createProject(text); setValue(""); router.push(`/chat/${project.id}`); } catch (err) { setError(err.message); }
   };
 
   const openSuggestion = (s) => {
-    const project = createProject(s.prompt);
-    router.push(`/chat/${project.id}`);
+    try { const project = createProject(s.prompt); router.push(`/chat/${project.id}`); } catch (err) { setError(err.message); }
   };
 
   return (
@@ -62,6 +60,7 @@ export default function Home() {
           <textarea id="workspace-prompt" rows={3} value={value} onChange={(e) => setValue(e.target.value)} placeholder="Ask a question or describe what you're working on..." />
           <div className="workspace-composer-actions"><span>Write freely. Start anywhere.</span><button type="submit" disabled={!value.trim()}>Start conversation <span aria-hidden="true">→</span></button></div>
         </form>
+        {error && <p role="alert" className="feedback error">{error}</p>}
         <div className="workspace-ideas"><div className="workspace-ideas-heading"><span>NEED A STARTING POINT?</span><span>SELECT AN IDEA ↗</span></div><div className="workspace-ideas-grid">{SUGGESTIONS.map((s, i) => <button key={s.title} onClick={() => openSuggestion(s)}><span className="workspace-number">0{i + 1}</span><span><strong>{s.title}</strong><small>{s.sub}</small></span><span className="workspace-arrow" aria-hidden="true">↗</span></button>)}</div></div>
       </div>
     </section>

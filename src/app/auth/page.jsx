@@ -54,13 +54,13 @@ export default function AuthPage() {
         />
         <button
           type="button"
-          onClick={() => setMode("login")}
+          onClick={() => { setMode("login"); setError(""); }}
           className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${!isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}>
           Login
         </button>
         <button
           type="button"
-          onClick={() => setMode("register")}
+          onClick={() => { setMode("register"); setError(""); }}
           className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}>
           Register
         </button>
@@ -72,7 +72,7 @@ export default function AuthPage() {
             <div className="flex gap-3">
               <input
                 type="text"
-                placeholder="First name"
+                aria-label="First name" placeholder="First name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
@@ -80,7 +80,7 @@ export default function AuthPage() {
               />
               <input
                 type="text"
-                placeholder="Last name"
+                aria-label="Last name" placeholder="Last name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -89,7 +89,7 @@ export default function AuthPage() {
             </div>
             <input
               type="email"
-              placeholder="Email"
+              aria-label="Email" placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -97,7 +97,7 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              placeholder="Password"
+              aria-label="Demo password" placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -110,7 +110,7 @@ export default function AuthPage() {
           <>
             <input
               type="email"
-              placeholder="Email"
+              aria-label="Email" placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -118,7 +118,7 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              placeholder="Password"
+              aria-label="Demo password" placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -128,13 +128,13 @@ export default function AuthPage() {
         )}
 
         {error && (
-          <p className="text-sm font-light text-red-400 text-center animate-fade-up">{error}</p>
+          <p role="alert" className="text-sm font-light text-red-400 text-center animate-fade-up">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full cursor-pointer rounded-[10px] bg-[#9cb9ab] py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#9cb9ab]/90 hover:shadow-[0_0_14px_rgba(156,185,171,0.3)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
+          className="mt-1 w-full cursor-pointer rounded-[10px] bg-[#9cb9ab] py-3 text-sm font-medium text-[#10231a] transition-all duration-300 hover:bg-[#9cb9ab]/90 hover:shadow-[0_0_14px_rgba(156,185,171,0.3)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
           {loading
             ? isRegister
               ? "Creating account..."
