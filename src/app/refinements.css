@@ -404,3 +404,9 @@
   padding: 7px 10px;
   font-size: 13px;
 }
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

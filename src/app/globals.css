@@ -171,10 +171,6 @@ body::after {
 .workspace-composer textarea::placeholder {
   color: #9baaa4;
 }
-.workspace-composer:focus-within {
-  outline: 2px solid #b9d5c6;
-  outline-offset: 2px;
-}
 .workspace-composer-actions {
   display: flex;
   align-items: center;
