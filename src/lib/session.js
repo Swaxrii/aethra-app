@@ -1,3 +1,12 @@
+function readPreference(key, fallback = null) {
+  if (typeof window === "undefined") return fallback;
+  try {
+    return localStorage.getItem(key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function getSession() {
   if (typeof window === "undefined") return null;
   try {
@@ -18,12 +27,7 @@ export function clearSession() {
 }
 
 export function getModelPref() {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem("aethra_model");
-  } catch {
-    return null;
-  }
+  return readPreference("aethra_model");
 }
 
 export function setModelPref(model) {
@@ -31,13 +35,8 @@ export function setModelPref(model) {
 }
 
 export function getTemperaturePref() {
-  if (typeof window === "undefined") return 0.7;
-  try {
-    const v = parseFloat(localStorage.getItem("aethra_temperature"));
-    return Number.isNaN(v) ? 0.7 : v;
-  } catch {
-    return 0.7;
-  }
+  const temperature = parseFloat(readPreference("aethra_temperature"));
+  return Number.isNaN(temperature) ? 0.7 : temperature;
 }
 
 export function setTemperaturePref(temperature) {
@@ -45,12 +44,7 @@ export function setTemperaturePref(temperature) {
 }
 
 export function getResponseLengthPref() {
-  if (typeof window === "undefined") return "Balanced";
-  try {
-    return localStorage.getItem("aethra_response_length") || "Balanced";
-  } catch {
-    return "Balanced";
-  }
+  return readPreference("aethra_response_length") || "Balanced";
 }
 
 export function setResponseLengthPref(length) {

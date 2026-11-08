@@ -155,26 +155,32 @@ export function projectToHTML(project, userName) {
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        padding: 40px 24px;
-        background: #1a1a1d;
-        color: #fff;
+        padding: 56px 24px;
+        background: #0b0c0f;
+        color: #e9e9ee;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         line-height: 1.6;
       }
       .wrap { max-width: 720px; margin: 0 auto; }
-      h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; }
-      .model { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 28px; }
-      .msg { margin-bottom: 16px; border-radius: 12px; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-      .msg.user { background: #A64D79; border-color: #A64D79; }
-      .meta { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
-      .msg p { margin: 0; white-space: pre-wrap; font-size: 15px; }
-      @media print { body { background: #fff; color: #000; } .msg { border-color: #ccc; } .meta { color: #666; } }
+      .brand { color: #d7d8df; font-size: 11px; font-weight: 700; letter-spacing: .22em; }
+      header { padding: 28px 0; margin-bottom: 28px; border-bottom: 1px solid #ffffff1a; }
+      h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.2; margin: 0 0 10px; font-weight: 600; overflow-wrap: anywhere; }
+      .model { color: #a2a5b0; font-size: 13px; }
+      .msg { margin: 0 0 26px; }
+      .msg.user p { background: #191a20; border: 1px solid #ffffff14; border-radius: 10px; padding: 14px 16px; }
+      .meta { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #a2a5b0; margin-bottom: 9px; }
+      .msg p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; line-height: 1.75; }
+      @media (max-width: 480px) { body { padding: 28px 18px; } header { padding: 22px 0; } }
+      @media print { body { background: #fff; color: #111; padding: 0; } header { border-color: #ccc; } .brand, .model, .meta { color: #555; } .msg.user p { background: #f5f5f5; border-color: #ddd; } .msg { break-inside: avoid; } }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <h1>${escapeHTML(project.title)}</h1>
-      <div class="model">${escapeHTML(project.model || "Aethra AI")}</div>
+      <div class="brand">AETHRA</div>
+      <header>
+        <h1>${escapeHTML(project.title)}</h1>
+        <div class="model">Conversation · ${escapeHTML(project.model || "Aethra AI")}</div>
+      </header>
       ${rows}
     </div>
   </body>
