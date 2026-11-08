@@ -1,49 +1,14 @@
-import { getTemperaturePref, getResponseLengthPref } from "./session";
-
-const LENGTH_GUIDES = {
-  Short: "Be concise and to the point. Keep the answer short.",
-  Balanced: "Give a clear, balanced answer.",
-  Detailed: "Be thorough and detailed in your answer.",
-};
+import { aiReply } from "./store";
 
 export async function streamAIReply(messages, { model, onToken, signal } = {}) {
-  const temperature = getTemperaturePref();
-  const length = getResponseLengthPref();
-
-  const body = {
-    messages,
-    model,
-    temperature,
-    ...(length && LENGTH_GUIDES[length] ? { system: LENGTH_GUIDES[length] } : {}),
-  };
-
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
-  });
-
-  if (!res.ok) {
-    let message = "AI request failed";
-    try {
-      const data = await res.json();
-      message = data.error || message;
-    } catch {
-      /* ignore */
-    }
-    throw new Error(message);
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
+  const prompt = messages.filter((message) => message.role === "user").at(-1)?.content || "";
+  const response = "Demo response (not AI-generated):\n\n" + aiReply(prompt, model);
   let text = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    text += decoder.decode(value, { stream: true });
+  for (const part of response.match(/.{1,8}/gs) || []) {
+    if (signal?.aborted) throw new DOMException("Stopped", "AbortError");
+    text += part;
     onToken?.(text);
+    await new Promise((resolve) => setTimeout(resolve, 18));
   }
-  onToken?.(text);
   return text;
 }

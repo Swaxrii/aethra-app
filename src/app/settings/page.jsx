@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { updateDemo } from "@/lib/localAuth";
 import { getSession, setSession, getModelPref, setModelPref, getTemperaturePref, setTemperaturePref, getResponseLengthPref, setResponseLengthPref } from "@/lib/session";
 
 const SECTIONS = [
@@ -29,6 +30,7 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const timer = setTimeout(() => {
     const user = getSession();
     if (user) {
       setUserId(user.id);
@@ -40,6 +42,8 @@ export default function SettingsPage() {
     if (pref) setModel(pref);
     setTemperature(getTemperaturePref());
     setResponseLength(getResponseLengthPref());
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const temperatureLabel = temperature < 0.4 ? "Focused" : temperature < 1.1 ? "Balanced" : temperature < 1.6 ? "Creative" : "Wild";
@@ -55,24 +59,17 @@ export default function SettingsPage() {
       const body = { id: userId, firstName, lastName, email };
       if (password) body.password = password;
 
-      const res = await fetch("/api/auth/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Something went wrong");
-        return;
+      if (active === "profile") {
+        const user = await updateDemo(userId, body);
+        setPassword("");
+        setSession(user);
       }
-      setPassword("");
-      setSession(data.user);
       setModelPref(model);
       setTemperaturePref(temperature);
       setResponseLengthPref(responseLength);
       setTimeout(() => setSaving(false), 1000);
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (err) {
+      setError(err.message || "Could not save local settings.");
       setSaving(false);
     }
   };
@@ -91,7 +88,7 @@ export default function SettingsPage() {
               {SECTIONS.map((s) => {
                 const on = active === s.id;
                 return (
-                  <button key={s.id} onClick={() => setActive(s.id)} className={`text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 cursor-pointer ${on ? "bg-[#A64D79] text-white font-medium" : "text-white/55 hover:text-white hover:bg-white/5"}`}>
+                  <button key={s.id} onClick={() => setActive(s.id)} className={`text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 cursor-pointer ${on ? "bg-[#9cb9ab] text-white font-medium" : "text-white/55 hover:text-white hover:bg-white/5"}`}>
                     {s.label}
                   </button>
                 );
@@ -105,7 +102,7 @@ export default function SettingsPage() {
                 <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise">
                   <div className="flex items-center gap-5">
                     <div className="relative flex-shrink-0">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center text-white font-bold text-2xl">{name[0] || "A"}</div>
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#9cb9ab] to-[#49695e] flex items-center justify-center text-white font-bold text-2xl">{name[0] || "A"}</div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-base font-semibold text-white">{name}</div>
@@ -146,11 +143,11 @@ export default function SettingsPage() {
                     {MODELS.map((m, i) => {
                       const on = model === m.value;
                       return (
-                        <button key={m.value} onClick={() => setModel(m.value)} style={{ animationDelay: `${0.1 + i * 0.07}s` }} className={`animate-rise w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${on ? "border-[#A64D79] bg-[#A64D79]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" : "border-white/10 hover:border-white/20"}`}>
+                        <button key={m.value} onClick={() => setModel(m.value)} style={{ animationDelay: `${0.1 + i * 0.07}s` }} className={`animate-rise w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 cursor-pointer ${on ? "border-[#9cb9ab] bg-[#9cb9ab]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" : "border-white/10 hover:border-white/20"}`}>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-white">{m.value}</span>
-                              {m.tag && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A64D79] text-white font-medium">{m.tag}</span>}
+                              {m.tag && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#9cb9ab] text-white font-medium">{m.tag}</span>}
                             </div>
                             <div className="text-xs text-white/45 font-light mt-0.5">{m.desc}</div>
                           </div>
@@ -164,7 +161,7 @@ export default function SettingsPage() {
                 <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-6 animate-rise-1">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-white/90">Creativity</h3>
-                    <span className="text-xs text-[#A64D79] font-medium">{temperatureLabel}</span>
+                    <span className="text-xs text-[#9cb9ab] font-medium">{temperatureLabel}</span>
                   </div>
                   <input
                     type="range"
@@ -175,7 +172,7 @@ export default function SettingsPage() {
                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
                     className="slider"
                     style={{
-                      background: `linear-gradient(to right, #A64D79 ${(temperature / 2) * 100}%, rgba(255,255,255,0.12) ${(temperature / 2) * 100}%)`,
+                      background: `linear-gradient(to right, #9cb9ab ${(temperature / 2) * 100}%, rgba(255,255,255,0.12) ${(temperature / 2) * 100}%)`,
                     }}
                   />
                   <div className="flex justify-between mt-2 text-[11px] text-white/40 font-light">
@@ -268,21 +265,21 @@ function Field({ label, children }) {
 
 function PrimaryButton({ onClick, children, saving }) {
   return (
-    <button onClick={onClick} disabled={saving} className={`h-11 min-w-[130px] px-6 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer active:scale-[0.98] ${saving ? "bg-[#7A3A5B] text-white" : "bg-[#A64D79] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:bg-[#A64D79]/90"}`}>
+    <button onClick={onClick} disabled={saving} className={`h-11 min-w-[130px] px-6 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer active:scale-[0.98] ${saving ? "bg-[#7A3A5B] text-white" : "bg-[#9cb9ab] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:bg-[#9cb9ab]/90"}`}>
       {saving ? "Saving..." : children}
     </button>
   );
 }
 
 function Radio({ on }) {
-  return <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${on ? "border-[#A64D79]" : "border-white/20"}`}>{on && <div className="w-2.5 h-2.5 rounded-full bg-[#A64D79]" />}</div>;
+  return <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${on ? "border-[#9cb9ab]" : "border-white/20"}`}>{on && <div className="w-2.5 h-2.5 rounded-full bg-[#9cb9ab]" />}</div>;
 }
 
 function Segmented({ options, value, onChange }) {
   return (
     <div className="flex rounded-lg bg-white/[0.04] border border-white/10 p-1 gap-1">
       {options.map((opt) => (
-        <button key={opt} onClick={() => onChange(opt)} className={`flex-1 px-3 py-1.5 text-sm rounded-md transition-all duration-200 cursor-pointer ${value === opt ? "bg-[#A64D79] text-white" : "text-white/55 hover:text-white"}`}>
+        <button key={opt} onClick={() => onChange(opt)} className={`flex-1 px-3 py-1.5 text-sm rounded-md transition-all duration-200 cursor-pointer ${value === opt ? "bg-[#9cb9ab] text-white" : "text-white/55 hover:text-white"}`}>
           {opt}
         </button>
       ))}
