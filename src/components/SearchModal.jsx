@@ -58,26 +58,31 @@ export default function SearchModal({ open, onClose }) {
       }}
     >
       <div className="search-heading">
-        <Search size={19} />
-        <h2 id="search-title">Find a conversation</h2>
+        <h2 id="search-title">Search</h2>
         <button className="icon-button" onClick={onClose} aria-label="Close search">
-          <X size={18} />
+          <X size={16} />
         </button>
       </div>
-      <input
-        ref={input}
-        className="search-input"
-        aria-label="Search conversations"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search titles and messages…"
-      />
+      <div className="search-field">
+        <Search size={17} aria-hidden="true" />
+        <input
+          ref={input}
+          className="search-input"
+          aria-label="Search conversations"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search conversations..."
+        />
+      </div>
       {error && (
         <p role="alert" className="feedback error">
           {error}
         </p>
       )}
       <div className="search-results">
+        {results.length > 0 && (
+          <p className="search-results-label">{query.trim() ? "Results" : "Recent"}</p>
+        )}
         {results.length ? (
           results.map((p) => (
             <Link key={p.id} href={`/chat/${p.id}`} onClick={onClose}>
@@ -87,10 +92,11 @@ export default function SearchModal({ open, onClose }) {
             </Link>
           ))
         ) : (
-          <p>No conversations found. Try another phrase.</p>
+          <p className="search-empty" role="status">
+            {query.trim() ? "No conversations found." : "Your conversations will appear here."}
+          </p>
         )}
       </div>
-      <footer>Tab to move through results · Enter to open · Esc to close</footer>
     </dialog>
   );
 }
