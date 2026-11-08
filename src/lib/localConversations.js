@@ -15,7 +15,12 @@ export function readConversations() {
   } catch {
     throw new Error("Conversation data could not be read. It has not been overwritten.");
   }
-  if (!Array.isArray(projects) || projects.some((project) => !project || typeof project.id !== "string" || !Array.isArray(project.messages))) {
+  if (
+    !Array.isArray(projects) ||
+    projects.some(
+      (project) => !project || typeof project.id !== "string" || !Array.isArray(project.messages),
+    )
+  ) {
     throw new Error("Conversation data has an unsupported format. It has not been overwritten.");
   }
   return projects;

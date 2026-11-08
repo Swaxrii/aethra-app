@@ -22,7 +22,9 @@ export default function AuthPage() {
     setError("");
     setLoading(true);
     try {
-      const user = isRegister ? await registerDemo({ firstName, lastName, email, password }) : await loginDemo(email, password);
+      const user = isRegister
+        ? await registerDemo({ firstName, lastName, email, password })
+        : await loginDemo(email, password);
       localStorage.setItem("aethra_user", JSON.stringify(user));
       router.push("/");
     } catch (err) {
@@ -44,7 +46,8 @@ export default function AuthPage() {
         AETHRA AI
       </h1>
       <p className="mt-1 mb-8 text-sm font-extralight text-white/60 text-center animate-fade-up">
-        {isRegister ? "Create a local demo account." : "Sign in to your local demo account."} Demo only: not secure. Do not use a real password.
+        {isRegister ? "Create a local demo account." : "Sign in to your local demo account."} Demo
+        only: not secure. Do not use a real password.
       </p>
 
       <div className="w-full relative flex items-center rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] p-1 mb-6 animate-fade-up">
@@ -54,14 +57,22 @@ export default function AuthPage() {
         />
         <button
           type="button"
-          onClick={() => { setMode("login"); setError(""); }}
-          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${!isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}>
+          onClick={() => {
+            setMode("login");
+            setError("");
+          }}
+          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${!isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}
+        >
           Login
         </button>
         <button
           type="button"
-          onClick={() => { setMode("register"); setError(""); }}
-          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}>
+          onClick={() => {
+            setMode("register");
+            setError("");
+          }}
+          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}
+        >
           Register
         </button>
       </div>
@@ -72,7 +83,8 @@ export default function AuthPage() {
             <div className="flex gap-3">
               <input
                 type="text"
-                aria-label="First name" placeholder="First name"
+                aria-label="First name"
+                placeholder="First name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
@@ -80,7 +92,8 @@ export default function AuthPage() {
               />
               <input
                 type="text"
-                aria-label="Last name" placeholder="Last name"
+                aria-label="Last name"
+                placeholder="Last name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -89,7 +102,8 @@ export default function AuthPage() {
             </div>
             <input
               type="email"
-              aria-label="Email" placeholder="Email"
+              aria-label="Email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -97,7 +111,8 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              aria-label="Demo password" placeholder="Password"
+              aria-label="Demo password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -110,7 +125,8 @@ export default function AuthPage() {
           <>
             <input
               type="email"
-              aria-label="Email" placeholder="Email"
+              aria-label="Email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -118,7 +134,8 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              aria-label="Demo password" placeholder="Password"
+              aria-label="Demo password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -128,13 +145,16 @@ export default function AuthPage() {
         )}
 
         {error && (
-          <p role="alert" className="text-sm font-light text-red-400 text-center animate-fade-up">{error}</p>
+          <p role="alert" className="text-sm font-light text-red-400 text-center animate-fade-up">
+            {error}
+          </p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full cursor-pointer rounded-[10px] bg-[#c6c9d2] py-3 text-sm font-medium text-[#10231a] transition-all duration-300 hover:bg-[#c6c9d2]/90 hover:shadow-[0_0_14px_rgba(198,201,210,0.3)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
+          className="mt-1 w-full cursor-pointer rounded-[10px] bg-[#c6c9d2] py-3 text-sm font-medium text-[#10231a] transition-all duration-300 hover:bg-[#c6c9d2]/90 hover:shadow-[0_0_14px_rgba(198,201,210,0.3)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {loading
             ? isRegister
               ? "Creating account..."
