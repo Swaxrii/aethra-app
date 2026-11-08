@@ -18,7 +18,15 @@ export function readConversations() {
   if (
     !Array.isArray(projects) ||
     projects.some(
-      (project) => !project || typeof project.id !== "string" || !Array.isArray(project.messages),
+      (project) =>
+        !project ||
+        typeof project.id !== "string" ||
+        typeof project.title !== "string" ||
+        !Array.isArray(project.messages) ||
+        project.messages.some(
+          (message) =>
+            !message || typeof message.text !== "string" || !["user", "ai"].includes(message.role),
+        ),
     )
   ) {
     throw new Error("Conversation data has an unsupported format. It has not been overwritten.");

@@ -2,12 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Search, X, MessageSquare, ArrowUpRight } from "lucide-react";
-import { loadProjects } from "@/lib/store";
+import { readConversations } from "@/lib/localConversations";
 export default function SearchModal({ open, onClose }) {
   const dialog = useRef(null);
   const input = useRef(null);
   const [query, setQuery] = useState("");
   const [projects, setProjects] = useState([]);
+  const [error, setError] = useState("");
   useEffect(() => {
     if (!open) {
       dialog.current?.close();
@@ -16,13 +17,26 @@ export default function SearchModal({ open, onClose }) {
     const node = dialog.current;
     const previous = document.activeElement;
     node?.showModal();
+    const refresh = () => {
+      try {
+        setProjects(readConversations());
+        setError("");
+      } catch (err) {
+        setProjects([]);
+        setError(err.message);
+      }
+    };
+    window.addEventListener("aethra-projects", refresh);
+    window.addEventListener("storage", refresh);
     const timer = setTimeout(() => {
       setQuery("");
-      setProjects(loadProjects());
+      refresh();
       input.current?.focus();
     }, 0);
     return () => {
       clearTimeout(timer);
+      window.removeEventListener("aethra-projects", refresh);
+      window.removeEventListener("storage", refresh);
       node?.close();
       previous?.focus();
     };
@@ -58,6 +72,11 @@ export default function SearchModal({ open, onClose }) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search titles and messages…"
       />
+      {error && (
+        <p role="alert" className="feedback error">
+          {error}
+        </p>
+      )}
       <div className="search-results">
         {results.length ? (
           results.map((p) => (

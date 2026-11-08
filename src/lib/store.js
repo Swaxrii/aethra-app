@@ -1,11 +1,11 @@
-import { writeConversations } from "./localConversations";
+import { readConversations, writeConversations } from "./localConversations";
 const KEY = "aethra_projects";
 const DAY = 24 * 60 * 60 * 1000;
 
 export function loadProjects() {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(KEY)) || [];
+    return readConversations();
   } catch {
     return [];
   }
