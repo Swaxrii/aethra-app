@@ -157,16 +157,20 @@ export default function SettingsPage() {
                     onChange={setModel}
                   />
                 </div>
-                <label className="ui-field">
-                  <span>Creativity · {Number(temperature).toFixed(1)}</span>
+                <label className="ui-field creativity-field">
+                  <span className="creativity-label">
+                    Creativity
+                    <output>{Number(temperature).toFixed(1)}</output>
+                  </span>
                   <input
-                    className="w-full"
+                    className="creativity-range"
                     type="range"
                     min="0"
                     max="2"
                     step=".1"
                     value={temperature}
                     onChange={(e) => setTemperature(e.target.value)}
+                    aria-label="Assistant creativity"
                   />
                 </label>
                 <div className="ui-field">

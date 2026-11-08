@@ -107,7 +107,6 @@ export default function Home() {
                 }
               }}
             />
-            <span className="composer-note">LOCAL DEMO</span>
             <button type="submit" disabled={!value.trim()} aria-label="Send message">
               <ArrowUp size={20} />
             </button>
