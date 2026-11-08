@@ -9,7 +9,7 @@
 }
 
 body {
-  background: #1a1a1d;
+  background: #111719;
   color: #ffffff;
   overflow: hidden;
 }
@@ -121,3 +121,6 @@ body::after {
 :focus-visible { outline:2px solid #c9ddcd; outline-offset:3px; }
 @media(max-width:640px) { .workspace-home { padding:3rem 1.25rem; }.workspace-edition { display:none; }.workspace-ideas-grid { grid-template-columns:1fr; }.workspace-composer-actions span { display:none; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
+
+:focus-visible { outline: 2px solid #c9ddcd; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

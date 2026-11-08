@@ -21,10 +21,10 @@ export default function ProjectsPage() {
   const refresh = () => setProjects(loadProjects());
 
   useEffect(() => {
-    refresh();
+    const timer = setTimeout(refresh, 0);
     const onStore = () => refresh();
     window.addEventListener("aethra-projects", onStore);
-    return () => window.removeEventListener("aethra-projects", onStore);
+    return () => { clearTimeout(timer); window.removeEventListener("aethra-projects", onStore); };
   }, []);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function ProjectsPage() {
       <div className="max-w-[960px] mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-white animate-rise">Projects</h1>
-          <p className="mt-1 text-sm font-light text-white/55 animate-rise-1">All your projects, stored permanently.</p>
+          <p className="mt-1 text-sm font-light text-white/55 animate-rise-1">Conversations saved in this browser.</p>
         </header>
 
         {projects.length === 0 ? (
@@ -76,7 +76,7 @@ export default function ProjectsPage() {
             {projects.map((p, i) => {
               if (editingId === p.id) {
                 return (
-                  <div key={p.id} style={{ animationDelay: `${i * 0.06}s` }} className="animate-rise rounded-xl bg-white/[0.03] border border-[#A64D79] p-5 flex flex-col gap-3">
+                  <div key={p.id} style={{ animationDelay: `${i * 0.06}s` }} className="animate-rise rounded-xl bg-white/[0.03] border border-[#9cb9ab] p-5 flex flex-col gap-3">
                     <span className="text-xs font-light text-white/45">Rename project</span>
                     <input
                       autoFocus
@@ -90,7 +90,7 @@ export default function ProjectsPage() {
                           setEditValue("");
                         }
                       }}
-                      className="w-full bg-[rgba(69,69,69,0.3)] border border-[#A64D79] rounded-lg px-3 py-2 text-sm text-white outline-none"
+                      className="w-full bg-[rgba(69,69,69,0.3)] border border-[#9cb9ab] rounded-lg px-3 py-2 text-sm text-white outline-none"
                     />
                   </div>
                 );
@@ -99,7 +99,7 @@ export default function ProjectsPage() {
                 <div
                   key={p.id}
                   style={{ animationDelay: `${i * 0.06}s` }}
-                  className="animate-rise group relative rounded-xl bg-white/[0.03] border border-white/10 p-5 flex flex-col gap-4 transition-all duration-300 hover:border-[#A64D79]/50 hover:bg-white/[0.05] cursor-pointer"
+                  className="animate-rise group relative rounded-xl bg-white/[0.03] border border-white/10 p-5 flex flex-col gap-4 transition-all duration-300 hover:border-[#9cb9ab]/50 hover:bg-white/[0.05] cursor-pointer"
                   onClick={() => openProject(p.id)}>
                   <div className="flex items-start justify-between gap-3">
                     <span className="min-w-0">
@@ -121,13 +121,13 @@ export default function ProjectsPage() {
                       e.stopPropagation();
                       openProject(p.id);
                     }}
-                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#A64D79] py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-[#A64D79]/90 cursor-pointer">
+                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#9cb9ab] py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-[#9cb9ab]/90 cursor-pointer">
                     Enter Project
                   </button>
 
                   {menuId === p.id && (
-                    <div ref={menuRef} className="absolute z-20 right-4 top-12 min-w-[150px] rounded-xl bg-[#232326]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => startRename(p)} className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/80 hover:bg-[#A64D79]/15 hover:text-white transition-colors cursor-pointer text-left">
+                    <div ref={menuRef} className="absolute z-20 right-4 top-12 min-w-[150px] rounded-xl bg-[#202b29]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={() => startRename(p)} className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/80 hover:bg-[#9cb9ab]/15 hover:text-white transition-colors cursor-pointer text-left">
                         <PencilIcon className="w-3.5 h-3.5 flex-shrink-0" />
                         <span>Rename</span>
                       </button>

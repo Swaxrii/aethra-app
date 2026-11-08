@@ -34,8 +34,8 @@ export default function Home() {
   const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
-    const user = getSession();
-    if (user) setFirstName(user.firstName || user.email.split("@")[0]);
+    const timer = setTimeout(() => { const user = getSession(); if (user) setFirstName(user.firstName || user.email.split("@")[0]); }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSend = () => {

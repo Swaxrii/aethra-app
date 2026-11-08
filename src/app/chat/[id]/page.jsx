@@ -28,11 +28,14 @@ export default function ChatPage() {
   const generatedCountRef = useRef(0);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
     const p = getProject(id);
     setProject(p);
     if (p) setModel(p.model);
     setLoading(false);
     touchProject(id);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [id]);
 
   useEffect(() => {
@@ -160,7 +163,7 @@ export default function ChatPage() {
         <div className="max-w-[820px] mx-auto flex items-center justify-between gap-3">
           <h1 className="flex-1 min-w-0 text-base sm:text-lg font-bold tracking-tight text-white truncate">{project.title}</h1>
           <div ref={exportRef} className="relative flex-shrink-0">
-            <button type="button" onClick={() => setExportOpen(!exportOpen)} className="h-8 sm:h-9 px-3 rounded-lg bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] hover:text-white cursor-pointer">
+            <button type="button" onClick={() => setExportOpen(!exportOpen)} className="h-8 sm:h-9 px-3 rounded-lg bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] text-sm text-white/75 transition-all duration-300 hover:border-[#9cb9ab] hover:text-white cursor-pointer">
               <span className="flex items-center gap-1.5">
                 Export
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 ${exportOpen ? "rotate-180" : ""}`}>
@@ -169,7 +172,7 @@ export default function ChatPage() {
               </span>
             </button>
             {exportOpen && (
-              <div className="absolute z-30 right-0 top-[42px] w-[170px] rounded-[12px] bg-[#2A2A2D] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1 animate-drop-in">
+              <div className="absolute z-30 right-0 top-[42px] w-[170px] rounded-[12px] bg-[#25312e] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1 animate-drop-in">
                 <button type="button" onClick={() => { exportHTML(); setExportOpen(false); }} className="w-full text-left rounded-[10px] px-3.5 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">Download as HTML</button>
               </div>
             )}
@@ -184,7 +187,7 @@ export default function ChatPage() {
             m.role === "ai" ? (
               <div key={i} className="flex items-start gap-3 sm:gap-4">
                 <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#9cb9ab] to-[#49695e] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="4" y="8" width="16" height="12" rx="2" />
                       <path d="M12 8V4" />
@@ -201,14 +204,14 @@ export default function ChatPage() {
               </div>
             ) : (
               <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] sm:max-w-[75%] rounded-[14px] bg-[#A64D79] px-3.5 sm:px-4 py-2.5 text-sm sm:text-[15px] leading-relaxed text-white font-light break-words">{m.text}</div>
+                <div className="max-w-[85%] sm:max-w-[75%] rounded-[14px] bg-[#9cb9ab] px-3.5 sm:px-4 py-2.5 text-sm sm:text-[15px] leading-relaxed text-white font-light break-words">{m.text}</div>
               </div>
             ),
           )}
           {streaming && (
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="flex-shrink-0 mt-0.5">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#9cb9ab] to-[#49695e] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </div>
               </div>
@@ -219,9 +222,9 @@ export default function ChatPage() {
                   <Markdown text={streamText} />
                 ) : (
                   <div className="flex items-center gap-2 text-white/50">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" style={{ animationDelay: "0.15s" }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" style={{ animationDelay: "0.3s" }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#9cb9ab] animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#9cb9ab] animate-pulse" style={{ animationDelay: "0.15s" }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#9cb9ab] animate-pulse" style={{ animationDelay: "0.3s" }} />
                   </div>
                 )}
               </div>
@@ -242,14 +245,14 @@ export default function ChatPage() {
               if (e.key === "Enter") send();
             }}
             onFocus={() => setOpen(false)}
-            className="flex-1 min-w-0 h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3.5 sm:px-4 text-sm text-white font-light placeholder:text-white/70 outline-none transition-all duration-500 focus:border-[#A64D79]"
+            className="flex-1 min-w-0 h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3.5 sm:px-4 text-sm text-white font-light placeholder:text-white/70 outline-none transition-all duration-500 focus:border-[#9cb9ab]"
           />
           {streaming && (
             <button
               type="button"
               onClick={stop}
               aria-label="Stop generating"
-              className="flex-shrink-0 h-[46px] sm:h-[44px] px-3.5 rounded-[10px] bg-[#A64D79]/15 border border-[#A64D79]/50 flex items-center gap-2 text-sm font-medium text-[#f4a3c7] transition-all duration-300 hover:bg-[#A64D79]/25 cursor-pointer animate-pop"
+              className="flex-shrink-0 h-[46px] sm:h-[44px] px-3.5 rounded-[10px] bg-[#9cb9ab]/15 border border-[#9cb9ab]/50 flex items-center gap-2 text-sm font-medium text-[#f4a3c7] transition-all duration-300 hover:bg-[#9cb9ab]/25 cursor-pointer animate-pop"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="6" y="6" width="12" height="12" rx="2" />
@@ -258,14 +261,14 @@ export default function ChatPage() {
             </button>
           )}
           <div ref={ref} className="relative flex-shrink-0">
-            <button type="button" onClick={() => setOpen(!open)} aria-label="Select AI model" className="h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3 sm:px-3.5 flex items-center justify-center gap-2 text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] cursor-pointer">
+            <button type="button" onClick={() => setOpen(!open)} aria-label="Select AI model" className="h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3 sm:px-3.5 flex items-center justify-center gap-2 text-sm text-white/75 transition-all duration-300 hover:border-[#9cb9ab] cursor-pointer">
               <span className="max-w-[110px] truncate">{model}</span>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 flex-shrink-0 ${open ? "rotate-180" : ""}`}>
                 <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             {open && (
-              <div className="absolute z-20 right-0 bottom-[52px] w-[180px] sm:w-[200px] rounded-[12px] bg-[#2A2A2D] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1">
+              <div className="absolute z-20 right-0 bottom-[52px] w-[180px] sm:w-[200px] rounded-[12px] bg-[#25312e] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1">
                 {MODELS.map((m) => {
                   const on = model === m;
                   return (
@@ -276,11 +279,11 @@ export default function ChatPage() {
                         setModel(m);
                         setOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer ${on ? "bg-[#A64D79]/15 text-white font-medium" : "text-white/70 hover:bg-white/5 hover:text-white"}`}>
+                      className={`w-full flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer ${on ? "bg-[#9cb9ab]/15 text-white font-medium" : "text-white/70 hover:bg-white/5 hover:text-white"}`}>
                       <span>{m}</span>
                       {on && (
-                        <span className="w-4 h-4 rounded-full border-[2px] border-[#A64D79] flex items-center justify-center flex-shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79]" />
+                        <span className="w-4 h-4 rounded-full border-[2px] border-[#9cb9ab] flex items-center justify-center flex-shrink-0">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#9cb9ab]" />
                         </span>
                       )}
                     </button>

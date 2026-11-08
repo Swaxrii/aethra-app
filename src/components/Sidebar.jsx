@@ -8,8 +8,8 @@ import { clearSession } from "@/lib/session";
 import SearchModal from "./SearchModal";
 import { SearchIcon, FolderIcon, SettingsIcon, LogoutIcon, PlusIcon, PencilIcon, TrashIcon, ChevronLeftIcon } from "./Icons";
 
-const GRADIENT_HOVER = "hover:bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] hover:text-white";
-const GRADIENT_ACTIVE = "bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] text-white";
+const GRADIENT_HOVER = "hover:bg-[linear-gradient(90deg,#9cb9ab_0%,rgba(64,30,47,0)_100%)] hover:text-white";
+const GRADIENT_ACTIVE = "bg-[linear-gradient(90deg,#9cb9ab_0%,rgba(64,30,47,0)_100%)] text-white";
 const NAV_BASE = "flex cursor-pointer items-center gap-3 rounded-[5px] px-2 py-2 text-[15px] font-normal transition-all";
 
 export default function Sidebar() {
@@ -76,10 +76,10 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    setProjects(getRecentProjects());
+    const timer = setTimeout(() => setProjects(getRecentProjects()), 0);
     const onStore = () => setProjects(getRecentProjects());
     window.addEventListener("aethra-projects", onStore);
-    return () => window.removeEventListener("aethra-projects", onStore);
+    return () => { clearTimeout(timer); window.removeEventListener("aethra-projects", onStore); };
   }, []);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function Sidebar() {
   return (
     <>
       {isMobile && isOpen && <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setIsOpen(false)} />}
-      <aside className={isMobile && isOpen ? "fixed inset-y-0 left-0 z-50 flex flex-col bg-[#3B1C32] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out w-[200px] animate-slide-in-left" : `h-full flex-shrink-0 flex flex-col bg-[#3B1C32] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out ${isOpen ? "w-[200px]" : "w-[52px]"} animate-slide-in-left`} onMouseEnter={() => setShowCloseIcon(true)} onMouseLeave={() => setShowCloseIcon(false)}>
+      <aside className={isMobile && isOpen ? "fixed inset-y-0 left-0 z-50 flex flex-col bg-[#192321] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out w-[200px] animate-slide-in-left" : `h-full flex-shrink-0 flex flex-col bg-[#192321] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out ${isOpen ? "w-[200px]" : "w-[52px]"} animate-slide-in-left`} onMouseEnter={() => setShowCloseIcon(true)} onMouseLeave={() => setShowCloseIcon(false)}>
         {isOpen ? (
           <>
             <div className="flex items-center gap-3 px-4 pt-6 relative">
@@ -116,14 +116,14 @@ export default function Sidebar() {
                 <span className="font-bold text-xl leading-tight text-white truncate">AETHRA AI</span>
                 <span className="font-extralight text-[11px] leading-tight text-white/50 truncate">Artificial Intelligence</span>
               </div>
-              {showCloseIcon && (
-                <button onClick={() => setIsOpen(false)} className="absolute -right-2 top-6 flex items-center justify-center rounded-full bg-[#A64D79] p-1 transition-all hover:scale-110">
+              {(showCloseIcon || isMobile) && (
+                <button aria-label="Close navigation" onClick={() => setIsOpen(false)} className="absolute -right-2 top-6 flex items-center justify-center rounded-full bg-[#9cb9ab] p-1 transition-all hover:scale-110">
                   <ChevronLeftIcon className="w-3.5 h-3.5 text-white" />
                 </button>
               )}
             </div>
 
-            <button onClick={() => router.push("/")} className="mx-4 mt-6 flex cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#A64D79] px-3 py-2 text-sm font-medium text-white transition-all duration-200 ease-in-out hover:scale-[1.02] hover:bg-[#A64D79]/90 hover:shadow-md active:scale-[0.97] active:shadow-none">
+            <button onClick={() => router.push("/")} className="mx-4 mt-6 flex cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#9cb9ab] px-3 py-2 text-sm font-medium text-[#14201b] transition-all duration-200 ease-in-out hover:scale-[1.02] hover:bg-[#9cb9ab]/90 hover:shadow-md active:scale-[0.97] active:shadow-none">
               <PlusIcon className="w-[16px] h-[16px]" />
               New Chat
             </button>
@@ -163,7 +163,7 @@ export default function Sidebar() {
                               setEditValue("");
                             }
                           }}
-                          className="w-full rounded-[5px] bg-[rgba(69,69,69,0.3)] border border-[#A64D79] px-2 py-2 text-[13px] text-white outline-none"
+                          className="w-full rounded-[5px] bg-[rgba(69,69,69,0.3)] border border-[#9cb9ab] px-2 py-2 text-[13px] text-white outline-none"
                         />
                       );
                     }
@@ -183,9 +183,9 @@ export default function Sidebar() {
 
             {menu && (
               <div
-                className="fixed z-[80] min-w-[170px] rounded-xl bg-[#232326]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]"
+                className="fixed z-[80] min-w-[170px] rounded-xl bg-[#202b29]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]"
                 style={{ left: menu.x, top: menu.y }}>
-                <button onClick={startRename} className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/80 hover:bg-[#A64D79]/15 hover:text-white transition-colors cursor-pointer text-left">
+                <button onClick={startRename} className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/80 hover:bg-[#9cb9ab]/15 hover:text-white transition-colors cursor-pointer text-left">
                   <PencilIcon className="w-3.5 h-3.5 flex-shrink-0" />
                   <span>Rename</span>
                 </button>

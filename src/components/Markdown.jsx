@@ -22,7 +22,7 @@ function CodeBlock({ children }) {
         <button
           type="button"
           onClick={copy}
-          className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md transition-all duration-200 cursor-pointer ${copied ? "bg-[#A64D79] text-white" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}
+          className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md transition-all duration-200 cursor-pointer ${copied ? "bg-[#9cb9ab] text-white" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}
         >
           {copied ? (
             <>
@@ -77,9 +77,9 @@ const components = {
     return <code className="px-1.5 py-0.5 rounded-md bg-white/10 text-[13px] text-[#f4a3c7] font-mono">{children}</code>;
   },
   pre: ({ children }) => <CodeBlock>{extractText(children)}</CodeBlock>,
-  blockquote: ({ children }) => <blockquote className="my-2 pl-3 border-l-2 border-[#A64D79] text-white/75 italic">{children}</blockquote>,
+  blockquote: ({ children }) => <blockquote className="my-2 pl-3 border-l-2 border-[#9cb9ab] text-white/75 italic">{children}</blockquote>,
   a: ({ children, href }) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#f4a3c7] underline underline-offset-2 hover:text-[#A64D79] transition-colors">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#f4a3c7] underline underline-offset-2 hover:text-[#9cb9ab] transition-colors">
       {children}
     </a>
   ),
