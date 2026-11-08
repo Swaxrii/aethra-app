@@ -396,3 +396,11 @@
   border-color: #ffffff4d;
   background-color: #ffffff08;
 }
+
+.workspace-composer-actions > .custom-select,
+.chat-composer form > div > .custom-select {
+  min-width: 130px;
+  min-height: 36px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
