@@ -1,0 +1,398 @@
+.app-sidebar.expanded {
+  width: 260px;
+  padding: 24px 16px 18px;
+}
+.app-sidebar.expanded .nav-brand {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+.app-sidebar.expanded .nav-brand > a {
+  gap: 10px;
+  font-size: 21px;
+}
+.app-sidebar.expanded .nav-brand > a > span {
+  display: block;
+}
+.app-sidebar.expanded .nav-brand small {
+  font-size: 9px;
+  color: #b0b3bd;
+  letter-spacing: 0.12em;
+}
+.app-sidebar.expanded .nav-create {
+  gap: 10px;
+  font-size: 14px;
+  padding: 12px;
+}
+.app-sidebar.expanded .nav-create span {
+  display: inline;
+}
+.app-sidebar.expanded .nav-primary {
+  gap: 5px;
+  margin-top: 28px;
+}
+.app-sidebar.expanded .nav-primary > a,
+.app-sidebar.expanded .nav-primary > button {
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px;
+  font-size: 14px;
+}
+.app-sidebar.expanded .nav-primary span {
+  display: inline;
+}
+.app-sidebar.expanded .nav-primary p {
+  display: block;
+  font-size: 11px;
+  padding-left: 12px;
+}
+.app-sidebar.expanded .nav-primary kbd {
+  display: inline;
+  font-size: 11px;
+}
+.app-sidebar.expanded .nav-primary > a::after,
+.app-sidebar.expanded .nav-primary > button::after,
+.app-sidebar.expanded .nav-create::after {
+  display: none;
+}
+.app-sidebar.expanded .nav-history {
+  position: relative;
+  display: block;
+  left: auto;
+  top: auto;
+  bottom: auto;
+  width: 100%;
+  flex: 1;
+  min-height: 50px;
+  padding: 0;
+  margin-top: 30px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  overflow-y: auto;
+}
+.app-sidebar.expanded .nav-history > p {
+  padding: 0 10px 12px;
+  font-size: 10px;
+}
+.nav-history-item > a {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 11px 10px;
+}
+.nav-history-item .icon-button {
+  min-width: 32px;
+}
+.app-sidebar.expanded .nav-history .nav-popover {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 100%;
+  margin-bottom: 5px;
+}
+.nav-history-item {
+  flex-wrap: wrap;
+}
+.nav-popover > button,
+.nav-popover > a {
+  font-size: 14px;
+  padding: 11px;
+}
+.app-sidebar.expanded .nav-account > button {
+  gap: 10px;
+  justify-content: flex-start;
+}
+.app-sidebar.expanded .nav-account > button > span:nth-child(2) {
+  display: block;
+  font-size: 14px;
+}
+.app-sidebar.expanded .nav-account > button > svg {
+  display: block;
+}
+.app-sidebar.expanded .nav-account small {
+  font-size: 12px;
+}
+.app-sidebar.expanded .nav-account > .nav-popover {
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  width: auto;
+}
+.app-sidebar.mobile.expanded {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 260px;
+  max-width: 85vw;
+}
+.nav-backdrop {
+  left: 0;
+  z-index: 35;
+}
+.nav-primary > a::after,
+.nav-primary > button::after,
+.nav-create::after {
+  font-size: 13px;
+  padding: 9px 12px;
+}
+.custom-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 150px;
+  min-height: 42px;
+  padding: 10px 13px;
+  color: #dfe1e8;
+  background: linear-gradient(135deg, #ffffff0b, #ffffff04);
+  border: 1px solid #ffffff20;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+.custom-select:hover,
+.custom-select[aria-expanded="true"] {
+  border-color: #ffffff4d;
+  background-color: #ffffff08;
+}
+.custom-select > span {
+  flex: 1;
+}
+.custom-select > svg {
+  color: #a4a8b5;
+  flex-shrink: 0;
+  transition: transform 0.16s;
+}
+.custom-select[aria-expanded="true"] > svg {
+  transform: rotate(180deg);
+}
+.select-menu {
+  position: fixed;
+  z-index: 120;
+  padding: 6px;
+  border: 1px solid #ffffff26;
+  border-radius: 10px;
+  background: #1c1d23;
+  box-shadow:
+    0 16px 45px #0009,
+    inset 0 1px #ffffff08;
+  animation: select-appear 0.12s ease-out;
+  outline: none;
+}
+.select-menu > [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 11px 12px;
+  border-radius: 6px;
+  color: #b9bdc9;
+  font-size: 14px;
+  cursor: pointer;
+}
+.select-menu > [aria-selected="true"] {
+  color: #f4f4f8;
+}
+.select-menu > .is-focused {
+  background: #ffffff10;
+  color: #fff;
+}
+.select-menu svg {
+  flex-shrink: 0;
+  color: #e1e4ee;
+}
+@keyframes select-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ui-field > .custom-select {
+  width: 100%;
+}
+.workspace-composer-actions > .custom-select {
+  min-width: 155px;
+}
+.chat-composer form > div > .custom-select {
+  min-width: 155px;
+}
+.workspace-lead,
+.page-header p,
+.settings-panel > p,
+.ui-field > span,
+.motion-choice small {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #a8adba;
+}
+.workspace-composer textarea,
+.chat-composer textarea,
+.ui-input,
+.search-input {
+  font-size: 16px;
+}
+.workspace-composer textarea::placeholder,
+.chat-composer textarea::placeholder,
+.ui-input::placeholder {
+  color: #a0a5b3;
+}
+.cinema-suggestions {
+  gap: 12px;
+  margin-top: 26px;
+}
+.cinema-suggestions button {
+  min-height: 42px;
+  padding: 11px 14px;
+  font-size: 14px;
+  color: #b9bdc9;
+  gap: 10px;
+}
+.cinema-suggestions svg {
+  width: 15px;
+  height: 15px;
+}
+.cinema-overline {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.cinema-disclaimer {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #969dab;
+}
+.composer-note {
+  font-size: 10px;
+}
+.ui-button,
+.settings-layout > nav button {
+  font-size: 14px;
+  min-height: 42px;
+}
+.ui-field > span {
+  margin-bottom: 9px;
+}
+.settings-panel h2 {
+  font-size: 22px;
+}
+.motion-choice {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.motion-choice input {
+  width: 18px;
+  height: 18px;
+}
+.search-heading h2 {
+  font-size: 15px;
+}
+.search-results a {
+  font-size: 15px;
+  padding: 15px;
+}
+.search-dialog footer {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a0a6b4;
+}
+.search-results a > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.conversation-info h2 {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.conversation-info p {
+  font-size: 13px;
+  color: #a1a7b5;
+}
+.conversation-actions .icon-button {
+  width: 40px;
+  min-height: 40px;
+}
+.message-body {
+  font-size: 16px;
+}
+.message-label {
+  font-size: 11px;
+  color: #a5abba;
+}
+.message-copy {
+  font-size: 13px;
+  min-height: 32px;
+  gap: 7px;
+  color: #9fa6b5;
+}
+.chat-composer > p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.eyebrow {
+  font-size: 11px;
+  color: #a4aab8;
+}
+@media (max-width: 767px) {
+  .cinema-suggestions button {
+    font-size: 13px;
+    padding: 9px 11px;
+  }
+  .workspace-lead {
+    font-size: 14px;
+  }
+  .cinema-overline {
+    font-size: 10px;
+  }
+  .cinema-disclaimer {
+    font-size: 12px;
+  }
+  .custom-select {
+    min-width: 140px;
+  }
+  .chat-composer form > div > .custom-select {
+    min-width: 140px;
+  }
+  .chat-composer form > div {
+    flex-wrap: wrap;
+  }
+  .chat-header .ui-button {
+    font-size: 12px;
+  }
+  .conversation-list article {
+    align-items: flex-start;
+  }
+  .conversation-actions {
+    max-width: 80px;
+    justify-content: flex-end;
+  }
+  .settings-panel {
+    padding: 20px;
+  }
+  .workspace-home {
+    padding-top: 28px;
+    padding-bottom: 28px;
+  }
+}
+
+.workspace-composer-actions > .custom-select {
+  width: auto;
+  height: auto;
+  min-height: 42px;
+  padding: 10px 13px;
+  color: #dfe1e8;
+  background: linear-gradient(135deg, #ffffff0b, #ffffff04);
+  border: 1px solid #ffffff20;
+  box-shadow: none;
+  font-size: 14px;
+}
+.workspace-composer-actions > .custom-select:hover,
+.workspace-composer-actions > .custom-select[aria-expanded="true"] {
+  color: #fff;
+  border-color: #ffffff4d;
+  background-color: #ffffff08;
+}

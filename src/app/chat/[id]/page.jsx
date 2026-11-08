@@ -1,23 +1,229 @@
 "use client";
-import { useEffect,useState,useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Copy, Download, Send, Square, MessageSquare } from "lucide-react";
-import { getProject,addMessage,addAIMessage,touchProject,projectToHTML } from "@/lib/store";
-import { getModelPref,setModelPref } from "@/lib/session";
+import { getProject, addMessage, addAIMessage, touchProject, projectToHTML } from "@/lib/store";
+import { getModelPref, setModelPref } from "@/lib/session";
 import { streamAIReply } from "@/lib/ai";
 import Markdown from "@/components/Markdown";
-export default function ChatPage(){
- const {id}=useParams(); const [project,setProject]=useState(null);const [loading,setLoading]=useState(true);const [input,setInput]=useState("");const [model,setModel]=useState("Aethra 1.0");const [streaming,setStreaming]=useState(false);const [text,setText]=useState("");const [error,setError]=useState("");const [status,setStatus]=useState("");const abort=useRef(null);const generated=useRef(0);const scroll=useRef(null);
- useEffect(()=>{generated.current=0;const timer=setTimeout(()=>{const p=getProject(id);setProject(p);setModel(p?.model||getModelPref()||"Aethra 1.0");setLoading(false);try{touchProject(id);}catch{setError("Could not update browser storage.");}},0);return()=>{clearTimeout(timer);abort.current?.abort();};},[id]);
- useEffect(()=>{const refresh=()=>setProject(getProject(id));window.addEventListener("aethra-projects",refresh);return()=>window.removeEventListener("aethra-projects",refresh);},[id]);
- useEffect(()=>{if(scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[project,text]);
- const count=project?.messages.length||0;const lastRole=project?.messages.at(-1)?.role;
- useEffect(()=>{if(lastRole!=="user"||count<=generated.current)return;generated.current=count;const controller=new AbortController();abort.current=controller;let partial="";const timer=setTimeout(async()=>{setStreaming(true);setText("");setError("");try{const messages=getProject(id).messages.map((m)=>({role:m.role==="user"?"user":"assistant",content:m.text}));const reply=await streamAIReply(messages,{model,signal:controller.signal,onToken:(value)=>{partial=value;setText(value);}});addAIMessage(id,reply);}catch(err){if(err.name==="AbortError"){if(partial.trim())addAIMessage(id,partial);}else setError(err.message||"Could not create the demo response.");}finally{setStreaming(false);setText("");setProject(getProject(id));}},0);return()=>clearTimeout(timer);},[id,count,lastRole,model]);
- const send=(e)=>{e.preventDefault();if(!input.trim()||streaming)return;try{addMessage(id,input.trim(),model);setInput("");setProject(getProject(id));}catch{setError("Could not save your message.");}};
- const copy=async(value)=>{try{await navigator.clipboard.writeText(value);setStatus("Message copied.");}catch{setError("Copy was unavailable. Select and copy the text instead.");}};
- const download=()=>{const blob=new Blob([projectToHTML(project,"You")],{type:"text/html"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="aethra-conversation.html";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
- if(loading)return <p role="status" className="p-8 text-white/70">Loading conversation…</p>;
- if(!project)return <div className="empty-conversations"><MessageSquare size={32}/><h1>Conversation not found</h1><Link href="/" className="ui-button">Start a new conversation</Link></div>;
- return <section className="chat-shell"><header className="chat-header"><div><span className="eyebrow">Conversation</span><h1>{project.title}</h1></div><button className="ui-button secondary" onClick={download}><Download size={16}/>Export HTML</button></header><div className="chat-messages" ref={scroll}><div className="chat-reading">{project.messages.map((m,i)=><article key={i} className={`chat-message ${m.role}`}><div className="message-label">{m.role==="user"?"You":"Aethra · local demo"}</div><div className="message-body">{m.role==="ai"?<Markdown text={m.text}/>:<p>{m.text}</p>}</div><button className="message-copy" aria-label={`Copy message ${i+1}`} onClick={()=>copy(m.text)}><Copy size={14}/>Copy</button></article>)}{streaming&&<article className="chat-message ai"><div className="message-label">Aethra · local demo</div><Markdown text={text||"Preparing a local response…"}/></article>}{error&&<p role="alert" className="feedback error">{error}</p>}{status&&<p role="status" className="text-xs text-white/70">{status}</p>}</div></div><footer className="chat-composer"><form onSubmit={send}><label className="sr-only" htmlFor="message">Message Aethra</label><textarea id="message" rows="2" value={input} onChange={(e)=>setInput(e.target.value)} placeholder="Continue the conversation…"/><div><label className="sr-only" htmlFor="chat-model">Model style</label><select id="chat-model" value={model} onChange={(e)=>{setModel(e.target.value);setModelPref(e.target.value);}}><option>Aethra 1.0</option><option>Aethra 1.1</option></select>{streaming?<button className="ui-button secondary" type="button" onClick={()=>abort.current?.abort()}><Square size={15}/>Stop</button>:<button className="ui-button" disabled={!input.trim()}><Send size={15}/>Send</button>}</div></form><p>Demo responses are scripted locally. No AI service is connected.</p></footer></section>;
+import Select from "@/components/Select";
+export default function ChatPage() {
+  const { id } = useParams();
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [input, setInput] = useState("");
+  const [model, setModel] = useState("Aethra 1.0");
+  const [streaming, setStreaming] = useState(false);
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
+  const abort = useRef(null);
+  const generated = useRef(0);
+  const scroll = useRef(null);
+  useEffect(() => {
+    generated.current = 0;
+    const timer = setTimeout(() => {
+      const p = getProject(id);
+      setProject(p);
+      setModel(p?.model || getModelPref() || "Aethra 1.0");
+      setLoading(false);
+      try {
+        touchProject(id);
+      } catch {
+        setError("Could not update browser storage.");
+      }
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      abort.current?.abort();
+    };
+  }, [id]);
+  useEffect(() => {
+    const refresh = () => setProject(getProject(id));
+    window.addEventListener("aethra-projects", refresh);
+    return () => window.removeEventListener("aethra-projects", refresh);
+  }, [id]);
+  useEffect(() => {
+    if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
+  }, [project, text]);
+  const count = project?.messages.length || 0;
+  const lastRole = project?.messages.at(-1)?.role;
+  useEffect(() => {
+    if (lastRole !== "user" || count <= generated.current) return;
+    generated.current = count;
+    const controller = new AbortController();
+    abort.current = controller;
+    let partial = "";
+    const timer = setTimeout(async () => {
+      setStreaming(true);
+      setText("");
+      setError("");
+      try {
+        const messages = getProject(id).messages.map((m) => ({
+          role: m.role === "user" ? "user" : "assistant",
+          content: m.text,
+        }));
+        const reply = await streamAIReply(messages, {
+          model,
+          signal: controller.signal,
+          onToken: (value) => {
+            partial = value;
+            setText(value);
+          },
+        });
+        addAIMessage(id, reply);
+      } catch (err) {
+        if (err.name === "AbortError") {
+          if (partial.trim()) addAIMessage(id, partial);
+        } else setError(err.message || "Could not create the demo response.");
+      } finally {
+        setStreaming(false);
+        setText("");
+        setProject(getProject(id));
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [id, count, lastRole, model]);
+  const send = (e) => {
+    e.preventDefault();
+    if (!input.trim() || streaming) return;
+    try {
+      addMessage(id, input.trim(), model);
+      setInput("");
+      setProject(getProject(id));
+    } catch {
+      setError("Could not save your message.");
+    }
+  };
+  const copy = async (value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setStatus("Message copied.");
+    } catch {
+      setError("Copy was unavailable. Select and copy the text instead.");
+    }
+  };
+  const download = () => {
+    const blob = new Blob([projectToHTML(project, "You")], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "aethra-conversation.html";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  if (loading)
+    return (
+      <p role="status" className="p-8 text-white/70">
+        Loading conversation…
+      </p>
+    );
+  if (!project)
+    return (
+      <div className="empty-conversations">
+        <MessageSquare size={32} />
+        <h1>Conversation not found</h1>
+        <Link href="/" className="ui-button">
+          Start a new conversation
+        </Link>
+      </div>
+    );
+  return (
+    <section className="chat-shell">
+      <header className="chat-header">
+        <div>
+          <span className="eyebrow">Conversation</span>
+          <h1>{project.title}</h1>
+        </div>
+        <button className="ui-button secondary" onClick={download}>
+          <Download size={16} />
+          Export HTML
+        </button>
+      </header>
+      <div className="chat-messages" ref={scroll}>
+        <div className="chat-reading">
+          {project.messages.map((m, i) => (
+            <article key={i} className={`chat-message ${m.role}`}>
+              <div className="message-label">
+                {m.role === "user" ? "You" : "Aethra · local demo"}
+              </div>
+              <div className="message-body">
+                {m.role === "ai" ? <Markdown text={m.text} /> : <p>{m.text}</p>}
+              </div>
+              <button
+                className="message-copy"
+                aria-label={`Copy message ${i + 1}`}
+                onClick={() => copy(m.text)}
+              >
+                <Copy size={14} />
+                Copy
+              </button>
+            </article>
+          ))}
+          {streaming && (
+            <article className="chat-message ai">
+              <div className="message-label">Aethra · local demo</div>
+              <Markdown text={text || "Preparing a local response…"} />
+            </article>
+          )}
+          {error && (
+            <p role="alert" className="feedback error">
+              {error}
+            </p>
+          )}
+          {status && (
+            <p role="status" className="text-xs text-white/70">
+              {status}
+            </p>
+          )}
+        </div>
+      </div>
+      <footer className="chat-composer">
+        <form onSubmit={send}>
+          <label className="sr-only" htmlFor="message">
+            Message Aethra
+          </label>
+          <textarea
+            id="message"
+            rows="2"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Continue the conversation…"
+          />
+          <div>
+            <Select
+              label="Model style"
+              value={model}
+              options={["Aethra 1.0", "Aethra 1.1"]}
+              onChange={(next) => {
+                try {
+                  setModelPref(next);
+                  setModel(next);
+                } catch {
+                  setError("Model preference could not be saved.");
+                }
+              }}
+            />
+            {streaming ? (
+              <button
+                className="ui-button secondary"
+                type="button"
+                onClick={() => abort.current?.abort()}
+              >
+                <Square size={15} />
+                Stop
+              </button>
+            ) : (
+              <button className="ui-button" disabled={!input.trim()}>
+                <Send size={15} />
+                Send
+              </button>
+            )}
+          </div>
+        </form>
+        <p>Demo responses are scripted locally. No AI service is connected.</p>
+      </footer>
+    </section>
+  );
 }

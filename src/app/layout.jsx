@@ -1,5 +1,6 @@
 import "./globals.css";
 import "./cinematic.css";
+import "./refinements.css";
 import Atmosphere from "@/components/Atmosphere";
 import Sidebar from "@/components/Sidebar";
 import Preferences from "@/components/Preferences";
@@ -18,7 +19,9 @@ export default function RootLayout({ children }) {
           <Atmosphere />
           <Preferences />
           <Sidebar />
-          <main className="relative z-10 min-w-0 flex flex-1 items-center justify-center">{children}</main>
+          <main className="relative z-10 min-w-0 flex flex-1 items-center justify-center">
+            {children}
+          </main>
         </>
       </body>
     </html>
