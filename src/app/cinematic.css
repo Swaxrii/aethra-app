@@ -185,6 +185,7 @@ body {
   white-space: nowrap;
   font-size: 11px;
   background: #222328;
+  color: #f4f4f6;
   border: 1px solid #ffffff20;
   padding: 7px 10px;
   border-radius: 6px;
@@ -399,8 +400,8 @@ body {
   max-width: 980px;
 }
 .page-header {
-  margin-bottom: 40px;
-  padding-bottom: 26px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #ffffff10;
 }
 .page-header h1 {
@@ -481,7 +482,7 @@ body {
 }
 .conversation-list article {
   border-color: #ffffff10;
-  padding: 25px 8px;
+  padding: 18px 8px;
 }
 .conversation-list article:hover {
   background: #ffffff02;
@@ -515,7 +516,7 @@ body {
   background: transparent;
 }
 .chat-header {
-  padding: 24px 36px;
+  padding: 18px 28px;
   border-color: #ffffff0e;
   background: #0c0d1166;
 }
@@ -524,7 +525,7 @@ body {
   font-size: 14px;
 }
 .chat-messages {
-  padding: 40px 32px;
+  padding: 28px 32px;
 }
 .chat-reading {
   max-width: 740px;
@@ -532,15 +533,15 @@ body {
 .message-label {
   color: #858995;
   font-size: 9px;
-  letter-spacing: 0.17em;
+  letter-spacing: 0.08em;
 }
 .message-body {
   font-size: 14px;
-  line-height: 1.9;
+  line-height: 1.75;
   color: #d3d5dd;
 }
 .chat-message {
-  margin-bottom: 38px;
+  margin-bottom: 28px;
 }
 .chat-message.user .message-body {
   background: #ffffff05;

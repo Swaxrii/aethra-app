@@ -207,7 +207,7 @@ export default function ChatPage() {
             />
             {streaming ? (
               <button
-                className="ui-button secondary"
+                className="ui-button secondary chat-composer-button"
                 type="button"
                 onClick={() => abort.current?.abort()}
               >
@@ -215,7 +215,7 @@ export default function ChatPage() {
                 Stop
               </button>
             ) : (
-              <button className="ui-button" disabled={!input.trim()}>
+              <button className="ui-button chat-composer-button" disabled={!input.trim()}>
                 <Send size={15} />
                 Send
               </button>

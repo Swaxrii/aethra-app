@@ -56,7 +56,7 @@ export default function AuthPage() {
 
       <div className="w-full relative flex items-center rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] p-1 mb-6 animate-fade-up">
         <div
-          className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-[8px] bg-[#c6c9d2] shadow-[0_0_12px_rgba(198,201,210,0.4)] transition-all duration-300 ease-out"
+          className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-[8px] bg-[#c6c9d2] transition-all duration-300 ease-out"
           style={{ left: isRegister ? "calc(50% + 4px)" : "4px" }}
         />
         <button
@@ -65,7 +65,7 @@ export default function AuthPage() {
             setMode("login");
             setError("");
           }}
-          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${!isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}
+          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${!isRegister ? "text-[#131419] font-medium" : "text-white/60 hover:text-white"}`}
         >
           Login
         </button>
@@ -75,7 +75,7 @@ export default function AuthPage() {
             setMode("register");
             setError("");
           }}
-          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${isRegister ? "text-white font-medium" : "text-white/60 hover:text-white"}`}
+          className={`relative flex-1 cursor-pointer rounded-[8px] py-2 text-sm transition-colors duration-300 ${isRegister ? "text-[#131419] font-medium" : "text-white/60 hover:text-white"}`}
         >
           Register
         </button>

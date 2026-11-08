@@ -43,7 +43,7 @@ export default function ProjectsPage() {
           <div>
             <span className="eyebrow">Your workspace</span>
             <h1>Conversations</h1>
-            <p>A place for every question, idea, and next step. Saved in this browser.</p>
+            <p>Revisit your conversations. Everything is saved in this browser.</p>
           </div>
           <Link href="/" className="ui-button">
             <Plus size={16} />
@@ -127,8 +127,8 @@ export default function ProjectsPage() {
           ) : (
             <div className="empty-conversations">
               <MessageSquare size={32} />
-              <h2>Start with a question.</h2>
-              <p>Your conversations will appear here.</p>
+              <h2>No conversations yet.</h2>
+              <p>Start a conversation to keep your ideas and responses together.</p>
               <Link className="ui-button" href="/">
                 Start a conversation
               </Link>
