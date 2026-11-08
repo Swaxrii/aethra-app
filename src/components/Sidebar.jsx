@@ -16,6 +16,7 @@ import {
   User,
   Pencil,
   Trash2,
+  Menu,
 } from "lucide-react";
 import { getRecentProjects, renameProject, deleteProject } from "@/lib/store";
 import { getSession, clearSession } from "@/lib/session";
@@ -150,6 +151,14 @@ export default function Sidebar() {
   const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Guest workspace";
   return (
     <>
+      <button
+        className="mobile-nav-toggle"
+        aria-label="Open navigation"
+        aria-expanded={expanded}
+        onClick={toggle}
+      >
+        <Menu size={21} />
+      </button>
       {mobile && expanded && (
         <button
           className="nav-backdrop"
@@ -209,7 +218,10 @@ export default function Sidebar() {
             </Link>
           ))}
           <button
-            onClick={() => setSearch(true)}
+            onClick={() => {
+              close();
+              setSearch(true);
+            }}
             title="Search conversations"
             aria-label="Search conversations"
           >

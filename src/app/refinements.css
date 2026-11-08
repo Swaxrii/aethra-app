@@ -534,3 +534,131 @@ textarea:focus-visible {
   outline: none;
   box-shadow: none;
 }
+
+.mobile-nav-toggle {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-nav-toggle {
+    position: fixed;
+    z-index: 30;
+    top: max(8px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--ink);
+    background: #18191e;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  body:has(.mobile-nav-toggle) main {
+    padding-top: calc(60px + env(safe-area-inset-top));
+  }
+  .app-sidebar.mobile.collapsed {
+    display: none;
+  }
+  .app-sidebar.mobile.expanded {
+    z-index: 50;
+    height: 100dvh;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+  }
+  .nav-backdrop {
+    z-index: 40;
+  }
+  .workspace-home {
+    align-items: flex-start;
+    padding: 20px 16px max(24px, env(safe-area-inset-bottom));
+  }
+  .cinema-brand {
+    gap: 12px;
+  }
+  .cinema-overline {
+    margin: 22px 0 12px;
+  }
+  .workspace-home h1 {
+    overflow-wrap: anywhere;
+  }
+  .workspace-composer {
+    margin-top: 24px;
+    padding: 16px;
+  }
+  .cinema-suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cinema-suggestions button {
+    justify-content: space-between;
+    min-height: 44px;
+    text-align: left;
+  }
+  .workspace-composer-actions > .custom-select span {
+    display: block;
+  }
+  .page-shell {
+    padding: 20px 16px max(24px, env(safe-area-inset-bottom));
+  }
+  .settings-layout > nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .settings-layout > nav button {
+    min-height: 44px;
+    padding: 9px 12px;
+  }
+  .settings-panel {
+    padding: 20px 16px;
+  }
+  .settings-footer {
+    flex-wrap: wrap;
+  }
+  .conversation-list article {
+    gap: 10px;
+  }
+  .conversation-symbol {
+    display: none;
+  }
+  .conversation-info {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .conversation-actions {
+    max-width: none;
+    flex-shrink: 0;
+  }
+  .conversation-actions .icon-button {
+    width: 44px;
+    min-height: 44px;
+  }
+  .chat-header {
+    padding: 12px 16px;
+  }
+  .chat-messages {
+    padding: 20px 16px;
+  }
+  .message-body {
+    overflow-wrap: anywhere;
+  }
+  .message-body pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .chat-composer {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .search-dialog {
+    max-height: calc(100dvh - 32px);
+    margin: 16px auto auto;
+    overflow: auto;
+  }
+  .search-results {
+    max-height: 50dvh;
+  }
+  .ambient-dust,
+  .light-shaft {
+    display: none;
+  }
+}
