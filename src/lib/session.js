@@ -9,10 +9,12 @@ export function getSession() {
 
 export function setSession(user) {
   localStorage.setItem("aethra_user", JSON.stringify(user));
+  window.dispatchEvent(new CustomEvent("aethra-session"));
 }
 
 export function clearSession() {
   localStorage.removeItem("aethra_user");
+  window.dispatchEvent(new CustomEvent("aethra-session"));
 }
 
 export function getModelPref() {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AethraMark from "@/components/AethraMark";
 import { useRouter } from "next/navigation";
+import { setSession } from "@/lib/session";
 import { registerDemo, loginDemo } from "@/lib/localAuth";
 
 export default function AuthPage() {
@@ -12,6 +13,7 @@ export default function AuthPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,10 +24,12 @@ export default function AuthPage() {
     setError("");
     setLoading(true);
     try {
+      if (isRegister && password !== confirmation)
+        throw new Error("The demo passwords do not match.");
       const user = isRegister
         ? await registerDemo({ firstName, lastName, email, password })
         : await loginDemo(email, password);
-      localStorage.setItem("aethra_user", JSON.stringify(user));
+      setSession(user);
       router.push("/");
     } catch (err) {
       setError(err.message || "Could not access local demo storage.");
@@ -111,12 +115,25 @@ export default function AuthPage() {
             />
             <input
               type="password"
+              minLength={isRegister ? 6 : undefined}
+              autoComplete={isRegister ? "new-password" : "current-password"}
               aria-label="Demo password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className={`${inputClass} animate-fade-up-stagger`}
+            />
+            <input
+              type="password"
+              aria-label="Confirm demo password"
+              placeholder="Confirm password"
+              autoComplete="new-password"
+              value={confirmation}
+              onChange={(e) => setConfirmation(e.target.value)}
+              required
+              minLength={6}
+              className={inputClass}
             />
           </>
         )}
@@ -134,6 +151,8 @@ export default function AuthPage() {
             />
             <input
               type="password"
+              minLength={isRegister ? 6 : undefined}
+              autoComplete={isRegister ? "new-password" : "current-password"}
               aria-label="Demo password"
               placeholder="Password"
               value={password}

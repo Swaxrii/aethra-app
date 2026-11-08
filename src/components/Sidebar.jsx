@@ -57,10 +57,12 @@ export default function Sidebar() {
     const timer = setTimeout(sync, 0);
     window.addEventListener("aethra-projects", sync);
     window.addEventListener("storage", sync);
+    window.addEventListener("aethra-session", sync);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("aethra-projects", sync);
       window.removeEventListener("storage", sync);
+      window.removeEventListener("aethra-session", sync);
     };
   }, [path]);
   useEffect(() => {

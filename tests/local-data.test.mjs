@@ -23,7 +23,12 @@ const storeUri = uri(storeSource);
 const store = await import(storeUri);
 const persistence = await import(persistenceUri);
 const auth = await import(
-  uri(await readFile(new URL("../src/lib/localAuth.js", import.meta.url), "utf8"))
+  uri(
+    (await readFile(new URL("../src/lib/localAuth.js", import.meta.url), "utf8")).replace(
+      '"@noble/hashes/sha2.js"',
+      JSON.stringify(import.meta.resolve("@noble/hashes/sha2.js")),
+    ),
+  )
 );
 const ai = await import(
   uri(
@@ -93,4 +98,24 @@ test("local response cancellation interrupts simulated output", async () => {
     { name: "AbortError" },
   );
   assert.ok(output.length > 0);
+});
+
+test("demo registration works without secure-context crypto and preserves SHA-256 compatibility", async () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+  Object.defineProperty(globalThis, "crypto", { value: {}, configurable: true });
+  try {
+    const user = await auth.registerDemo({
+      firstName: "LAN",
+      lastName: "Demo",
+      email: "lan@example.test",
+      password: "demo-only-123",
+    });
+    assert.ok(user.id.startsWith("demo-"));
+    assert.equal((await auth.loginDemo("lan@example.test", "demo-only-123")).id, user.id);
+    const { createHash } = await import("node:crypto");
+    const expected = createHash("sha256").update("demo-only-123").digest("hex");
+    assert.equal(JSON.parse(values.get("aethra_demo_accounts"))[0].passwordHash, expected);
+  } finally {
+    Object.defineProperty(globalThis, "crypto", original);
+  }
 });

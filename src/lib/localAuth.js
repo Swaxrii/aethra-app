@@ -1,16 +1,37 @@
+import { sha256 } from "@noble/hashes/sha2.js";
 const KEY = "aethra_demo_accounts";
 function accounts() {
-  const raw = localStorage.getItem(KEY);
+  let raw;
+  try {
+    raw = localStorage.getItem(KEY);
+  } catch {
+    throw new Error("Browser storage is unavailable. Enable site storage to use demo accounts.");
+  }
   if (!raw) return [];
-  const value = JSON.parse(raw);
-  if (!Array.isArray(value))
+  let value;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    throw new Error("Local account data could not be read. It has not been overwritten.");
+  }
+  if (
+    !Array.isArray(value) ||
+    value.some(
+      (user) =>
+        !user ||
+        typeof user.id !== "string" ||
+        typeof user.email !== "string" ||
+        typeof user.passwordHash !== "string",
+    )
+  )
     throw new Error("Local account data is invalid; it has not been changed.");
   return value;
 }
 async function digest(value) {
-  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(bytes), (n) => n.toString(16).padStart(2, "0")).join("");
+  const bytes = sha256(new TextEncoder().encode(value));
+  return Array.from(bytes, (n) => n.toString(16).padStart(2, "0")).join("");
 }
+
 function publicUser(user) {
   const { passwordHash, ...safe } = user;
   return safe;
@@ -28,7 +49,9 @@ export async function registerDemo({ firstName, lastName, email, password }) {
   if (list.some((u) => u.email === normalized))
     throw new Error("This email is already registered in this browser.");
   const user = {
-    id: crypto.randomUUID(),
+    id:
+      globalThis.crypto?.randomUUID?.() ||
+      `demo-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     firstName: firstName.trim(),
     lastName: lastName.trim(),
     email: normalized,
