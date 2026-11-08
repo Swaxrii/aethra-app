@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
       <body className="h-full flex overflow-hidden">
         <>
           <Sidebar />
-          <main className="relative z-10 flex flex-1 items-center justify-center">{children}</main>
+          <main className="relative min-w-0 flex flex-1 items-center justify-center">{children}</main>
         </>
       </body>
     </html>

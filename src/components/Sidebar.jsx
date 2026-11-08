@@ -83,7 +83,7 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => { const mobile = window.innerWidth < 768; setIsMobile(mobile); if (mobile) setIsOpen(false); };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -107,7 +107,7 @@ export default function Sidebar() {
   return (
     <>
       {isMobile && isOpen && <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setIsOpen(false)} />}
-      <aside className={isMobile && isOpen ? "fixed inset-y-0 left-0 z-50 flex flex-col bg-[#192321] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out w-[200px] animate-slide-in-left" : `h-full flex-shrink-0 flex flex-col bg-[#192321] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out ${isOpen ? "w-[200px]" : "w-[52px]"} animate-slide-in-left`} onMouseEnter={() => setShowCloseIcon(true)} onMouseLeave={() => setShowCloseIcon(false)}>
+      <aside className={isMobile && isOpen ? "fixed inset-y-0 left-0 z-50 flex flex-col bg-[#192321] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out w-[200px] animate-slide-in-left" : `relative z-20 h-full flex-shrink-0 flex flex-col bg-[#192321] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out ${isOpen ? "w-[200px]" : "w-[52px]"} animate-slide-in-left`} onMouseEnter={() => setShowCloseIcon(true)} onMouseLeave={() => setShowCloseIcon(false)}>
         {isOpen ? (
           <>
             <div className="flex items-center gap-3 px-4 pt-6 relative">
