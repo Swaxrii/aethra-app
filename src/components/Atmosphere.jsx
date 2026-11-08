@@ -1,0 +1,3 @@
+export default function Atmosphere() {
+ return <div className="atmosphere" aria-hidden="true"><div className="ambient-halo"/><div className="light-shaft shaft-one"/><div className="light-shaft shaft-two"/><svg className="ambient-lines" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="currentColor" strokeWidth=".6"><path d="M-100 810Q400 210 1500 620"/><path d="M-100 830Q420 240 1500 645"/><path d="M-100 850Q440 270 1500 670"/><ellipse cx="820" cy="180" rx="600" ry="260" transform="rotate(-30 820 180)"/></g></svg><div className="ambient-dust"/><div className="ambient-grain"/></div>;
+}
