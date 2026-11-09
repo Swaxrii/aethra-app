@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, ArrowUpRight, Pencil, Trash2, MessageSquare } from "lucide-react";
 import { api, changed } from "@/lib/api";
-import { exportConversationBackup, readConversations } from "@/lib/localConversations";
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [hasMore, setHasMore] = useState(false);
@@ -12,9 +11,6 @@ export default function ProjectsPage() {
   const [editing, setEditing] = useState(null);
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
-  const [local, setLocal] = useState([]);
-  const [importing, setImporting] = useState(false);
-  const [importStatus, setImportStatus] = useState("");
   useEffect(() => {
     const refresh = () =>
       api("/api/conversations")
@@ -26,18 +22,10 @@ export default function ProjectsPage() {
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     const timer = setTimeout(refresh, 0);
-    const localTimer = setTimeout(() => {
-      try {
-        setLocal(readConversations());
-      } catch (err) {
-        setError(err.message);
-      }
-    }, 0);
     window.addEventListener("aethra-projects", refresh);
     window.addEventListener("storage", refresh);
     return () => {
       clearTimeout(timer);
-      clearTimeout(localTimer);
       window.removeEventListener("aethra-projects", refresh);
       window.removeEventListener("storage", refresh);
     };
@@ -52,48 +40,6 @@ export default function ProjectsPage() {
       setError(err.message);
     } finally {
       setLoadingMore(false);
-    }
-  };
-  const backupLocal = () => {
-    try {
-      const blob = new Blob([exportConversationBackup()], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "aethra-browser-backup.json";
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-  const importLocal = async () => {
-    if (
-      !local.length ||
-      !window.confirm(
-        `Import ${local.length} browser conversations into this account? Browser data may include conversations from other demo accounts. Review and back up your data first.`,
-      )
-    )
-      return;
-    setImporting(true);
-    setError("");
-    try {
-      let imported = 0;
-      let skipped = 0;
-      for (let index = 0; index < local.length; index += 10) {
-        const result = await api("/api/conversations/import", {
-          method: "POST",
-          body: JSON.stringify({ conversations: local.slice(index, index + 10) }),
-        });
-        imported += result.imported;
-        skipped += result.skipped;
-      }
-      setImportStatus(`${imported} imported, ${skipped} already present. Browser data was kept.`);
-      changed();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setImporting(false);
     }
   };
   const rename = async (id) => {
@@ -129,30 +75,6 @@ export default function ProjectsPage() {
             New conversation
           </Link>
         </header>
-        {local.length > 0 && (
-          <div className="surface" style={{ padding: "16px 20px", marginBottom: 20 }}>
-            <p>
-              {local.length} conversations are still saved in this browser. They may belong to
-              different demo accounts.
-            </p>
-            <div
-              className="conversation-actions"
-              style={{ justifyContent: "flex-start", marginTop: 12 }}
-            >
-              <button className="ui-button secondary" onClick={backupLocal}>
-                Download backup
-              </button>
-              <button className="ui-button secondary" onClick={importLocal} disabled={importing}>
-                {importing ? "Importing…" : "Import into this account"}
-              </button>
-            </div>
-            {importStatus && (
-              <p role="status" className="feedback">
-                {importStatus}
-              </p>
-            )}
-          </div>
-        )}
         {error && (
           <p role="alert" className="feedback error">
             {error}

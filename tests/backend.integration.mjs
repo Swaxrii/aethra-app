@@ -332,51 +332,6 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
         .conversations,
       [],
     );
-    const legacy = {
-      id: "p-test-1",
-      title: "Old conversation",
-      messages: [
-        { role: "user", text: "First" },
-        { role: "ai", text: "Second" },
-      ],
-    };
-    assert.equal(
-      (
-        await request(
-          "/api/conversations/import",
-          "POST",
-          { conversations: [legacy] },
-          login.cookie,
-        )
-      ).data.imported,
-      1,
-    );
-    assert.equal(
-      (
-        await request(
-          "/api/conversations/import",
-          "POST",
-          { conversations: [legacy] },
-          login.cookie,
-        )
-      ).data.skipped,
-      1,
-    );
-    const imported = (
-      await request("/api/conversations?q=Old conversation", "GET", undefined, login.cookie)
-    ).data.conversations[0];
-    const importedDetail = await request(
-      `/api/conversations/${imported.id}`,
-      "GET",
-      undefined,
-      login.cookie,
-    );
-    assert.equal(importedDetail.data.conversation.messages.length, 2);
-    assert.equal(imported.messageCount, 2);
-    assert.deepEqual(
-      importedDetail.data.conversation.messages.map((message) => message.text),
-      ["First", "Second"],
-    );
     assert.equal(
       (await request(`/api/conversations/${id}`, "DELETE", undefined, login.cookie)).status,
       200,

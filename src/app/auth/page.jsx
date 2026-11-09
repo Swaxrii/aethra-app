@@ -55,7 +55,7 @@ export default function AuthPage() {
     "w-full h-[46px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-4 text-sm text-white font-light placeholder:text-white/70 outline-none transition-all duration-500";
 
   return (
-    <div className="flex flex-col items-center justify-center auth-panel w-full max-w-[400px] px-4">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[400px] flex-col items-center justify-center auth-panel px-4 py-10">
       <div className="animate-fade-up">
         <AethraMark size={56} className="mb-6" />
       </div>
