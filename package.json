@@ -5,16 +5,20 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.mjs",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:integration": "node --test tests/backend.integration.mjs"
   },
   "dependencies": {
-    "@noble/hashes": "^2.4.0",
+    "argon2": "^0.45.2",
+    "drizzle-orm": "^0.45.4",
     "lucide-react": "^1.70.0",
-    "next": "16.2.12",
+    "next": "^16.4.5",
+    "pg": "^8.23.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
@@ -22,8 +26,9 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "^16.4.5",
     "prettier": "^3.9.10",
     "tailwindcss": "^4"
   }

@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794240411866,
+      "tag": "0000_fair_maggott",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794241063286,
+      "tag": "0001_perfect_blindfold",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794241272489,
+      "tag": "0002_shallow_starbolt",
+      "breakpoints": true
+    }
+  ]
+}
