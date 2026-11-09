@@ -2,12 +2,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Search, X, MessageSquare, ArrowUpRight } from "lucide-react";
-import { readConversations } from "@/lib/localConversations";
+import { api } from "@/lib/api";
 export default function SearchModal({ open, onClose }) {
   const dialog = useRef(null);
   const input = useRef(null);
   const [query, setQuery] = useState("");
   const [projects, setProjects] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const currentQuery = useRef("");
   const [error, setError] = useState("");
   useEffect(() => {
     if (!open) {
@@ -17,36 +20,62 @@ export default function SearchModal({ open, onClose }) {
     const node = dialog.current;
     const previous = document.activeElement;
     node?.showModal();
-    const refresh = () => {
-      try {
-        setProjects(readConversations());
-        setError("");
-      } catch (err) {
-        setProjects([]);
-        setError(err.message);
-      }
-    };
-    window.addEventListener("aethra-projects", refresh);
-    window.addEventListener("storage", refresh);
     const timer = setTimeout(() => {
       setQuery("");
-      refresh();
       input.current?.focus();
     }, 0);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("aethra-projects", refresh);
-      window.removeEventListener("storage", refresh);
       node?.close();
       previous?.focus();
     };
   }, [open]);
-  const results = projects.filter((p) =>
-    [p.title, ...(p.messages || []).map((m) => m.text)]
-      .join(" ")
-      .toLowerCase()
-      .includes(query.toLowerCase().trim()),
-  );
+  useEffect(() => {
+    if (!open) return;
+    currentQuery.current = query;
+    let active = true;
+    const timer = setTimeout(
+      async () => {
+        try {
+          const result = await api(`/api/conversations?q=${encodeURIComponent(query.trim())}`);
+          if (active) {
+            setProjects(result.conversations);
+            setHasMore(result.hasMore);
+            setError("");
+          }
+        } catch (err) {
+          if (active) {
+            setProjects([]);
+            setHasMore(false);
+            setError(err.message);
+          }
+        }
+      },
+      query ? 180 : 0,
+    );
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [open, query]);
+  const loadMore = async () => {
+    const search = query.trim();
+    setLoadingMore(true);
+    try {
+      const result = await api(
+        `/api/conversations?q=${encodeURIComponent(search)}&offset=${projects.length}`,
+      );
+      if (currentQuery.current === query) {
+        setProjects((current) => [...current, ...result.conversations]);
+        setHasMore(result.hasMore);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+  const results = projects;
   return (
     <dialog
       ref={dialog}
@@ -95,6 +124,11 @@ export default function SearchModal({ open, onClose }) {
           <p className="search-empty" role="status">
             {query.trim() ? "No conversations found." : "Your conversations will appear here."}
           </p>
+        )}
+        {hasMore && (
+          <button className="ui-button secondary" onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? "Loading…" : "More results"}
+          </button>
         )}
       </div>
     </dialog>

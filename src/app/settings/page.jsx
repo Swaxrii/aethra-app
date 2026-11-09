@@ -2,57 +2,69 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { User, SlidersHorizontal, Save, RotateCcw } from "lucide-react";
-import { updateDemo } from "@/lib/localAuth";
+import { api } from "@/lib/api";
 import Select from "@/components/Select";
-import {
-  getSession,
-  setSession,
-  getModelPref,
-  setModelPref,
-  getTemperaturePref,
-  setTemperaturePref,
-  getResponseLengthPref,
-  setResponseLengthPref,
-} from "@/lib/session";
 export default function SettingsPage() {
   const [tab, setTab] = useState("profile");
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [model, setModel] = useState("Aethra 1.0");
   const [temperature, setTemperature] = useState(0.7);
   const [length, setLength] = useState("Balanced");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const u = getSession();
-      setUser(u);
-      setName([u?.firstName, u?.lastName].filter(Boolean).join(" "));
-      setEmail(u?.email || "");
-      setModel(getModelPref() || "Aethra 1.0");
-      setTemperature(getTemperaturePref());
-      setLength(getResponseLengthPref());
-    }, 0);
-    return () => clearTimeout(timer);
+    let active = true;
+    Promise.all([api("/api/auth/session"), api("/api/preferences")])
+      .then(([session, result]) => {
+        if (!active) return;
+        const u = session.user;
+        setUser(u);
+        setName([u.firstName, u.lastName].filter(Boolean).join(" "));
+        setEmail(u.email);
+        setModel(result.preferences.model);
+        setTemperature(result.preferences.temperature);
+        setLength(result.preferences.responseLength);
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
   const save = async () => {
     setFeedback("");
     setError("");
     try {
       if (tab === "profile") {
-        if (!user) throw new Error("Sign in to a local demo account first.");
+        if (!user) throw new Error("Sign in first.");
         const [firstName, ...rest] = name.trim().split(/\s+/);
-        const u = await updateDemo(user.id, { firstName, lastName: rest.join(" "), email });
-        setSession(u);
-        setUser(u);
+        const result = await api("/api/profile", {
+          method: "PATCH",
+          body: JSON.stringify({
+            firstName,
+            lastName: rest.join(" "),
+            email,
+            currentPassword,
+            ...(newPassword ? { password: newPassword } : {}),
+          }),
+        });
+        setUser(result.user);
+        setCurrentPassword("");
+        setNewPassword("");
+        window.dispatchEvent(new CustomEvent("aethra-session"));
       }
       if (tab === "model") {
-        setModelPref(model);
-        setTemperaturePref(Number(temperature));
-        setResponseLengthPref(length);
+        await api("/api/preferences", {
+          method: "PUT",
+          body: JSON.stringify({ model, temperature: Number(temperature), responseLength: length }),
+        });
       }
-      setFeedback("Saved in this browser.");
+      setFeedback("Changes saved.");
     } catch (err) {
       setError(err.message || "Could not save preferences.");
     }
@@ -104,7 +116,7 @@ export default function SettingsPage() {
             {tab === "profile" ? (
               <>
                 <h2>Your profile</h2>
-                <p>Local demo account. This does not provide production security.</p>
+                <p>Manage your account details.</p>
                 {!user && (
                   <Link href="/auth" className="ui-button secondary">
                     Sign in or register
@@ -129,13 +141,33 @@ export default function SettingsPage() {
                     autoComplete="email"
                   />
                 </label>
+                <label className="ui-field">
+                  <span>Current password (required to change email or password)</span>
+                  <input
+                    className="ui-input"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                </label>
+                <label className="ui-field">
+                  <span>New password</span>
+                  <input
+                    className="ui-input"
+                    type="password"
+                    minLength={12}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    autoComplete="new-password"
+                    placeholder="Leave blank to keep current password"
+                  />
+                </label>
               </>
             ) : (
               <>
                 <h2>Assistant preferences</h2>
-                <p>
-                  These settings control the local demonstration, without contacting AI services.
-                </p>
+                <p>Choose how local assistant responses are presented.</p>
                 <div className="ui-field">
                   <span>Model style</span>
                   <Select

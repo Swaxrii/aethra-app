@@ -18,8 +18,7 @@ import {
   Trash2,
   Menu,
 } from "lucide-react";
-import { getRecentProjects, renameProject, deleteProject } from "@/lib/store";
-import { getSession, clearSession } from "@/lib/session";
+import { api, changed } from "@/lib/api";
 import SearchModal from "./SearchModal";
 
 export default function Sidebar() {
@@ -52,8 +51,16 @@ export default function Sidebar() {
   }, []);
   useEffect(() => {
     const sync = () => {
-      setProjects(getRecentProjects());
-      setUser(getSession());
+      api("/api/conversations")
+        .then((data) =>
+          setProjects(
+            data.conversations.filter((p) => Date.now() - p.lastAccessed < 24 * 60 * 60 * 1000),
+          ),
+        )
+        .catch(() => setProjects([]));
+      api("/api/auth/session")
+        .then((data) => setUser(data.user))
+        .catch(() => setUser(null));
     };
     const timer = setTimeout(sync, 0);
     window.addEventListener("aethra-projects", sync);
@@ -81,6 +88,11 @@ export default function Sidebar() {
     window.addEventListener("keydown", handle);
     return () => window.removeEventListener("keydown", handle);
   }, [mobile]);
+  useEffect(() => {
+    const redirect = () => router.replace("/auth");
+    window.addEventListener("aethra-unauthorized", redirect);
+    return () => window.removeEventListener("aethra-unauthorized", redirect);
+  }, [router]);
   useEffect(() => {
     if (!mobile || !expanded) return;
     const previous = document.activeElement;
@@ -128,20 +140,22 @@ export default function Sidebar() {
       }
     }
   };
-  const rename = (id) => {
+  const rename = async (id) => {
     try {
       if (!title.trim()) return;
-      renameProject(id, title);
+      await api(`/api/conversations/${id}`, { method: "PATCH", body: JSON.stringify({ title }) });
+      changed();
       setEditing(null);
       setError("");
     } catch {
       setError("Could not save the conversation name.");
     }
   };
-  const remove = (id) => {
+  const remove = async (id) => {
     if (!confirm("Delete this conversation? This cannot be undone.")) return;
     try {
-      deleteProject(id);
+      await api(`/api/conversations/${id}`, { method: "DELETE" });
+      changed();
       setMenu(null);
       if (path === `/chat/${id}`) router.push("/");
     } catch {
@@ -302,8 +316,14 @@ export default function Sidebar() {
                 {user ? "Edit profile" : "Sign in / Register"}
               </Link>
               <button
-                onClick={() => {
-                  clearSession();
+                onClick={async () => {
+                  try {
+                    await api("/api/auth/logout", { method: "POST" });
+                  } catch (err) {
+                    setError(err.message);
+                    return;
+                  }
+                  setUser(null);
                   setAccount(false);
                   router.push("/auth");
                 }}
@@ -322,7 +342,7 @@ export default function Sidebar() {
             <span className="nav-avatar">{name[0]}</span>
             <span>
               {name}
-              <small>{user ? "Local demo account" : "Demo mode"}</small>
+              <small>{user ? user.email : "Sign in"}</small>
             </span>
             <MoreHorizontal size={17} />
           </button>

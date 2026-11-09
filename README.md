@@ -1,14 +1,13 @@
 # Aethra
 
-Aethra is a browser-local demo. Responses are scripted and are not AI-generated. Demo accounts and conversations are stored in browser storage; they are not secure, are not synchronized, and can be lost when browser data is cleared. Do not use a real password.
+Aethra stores accounts, sessions, preferences, and conversations in PostgreSQL. Assistant responses remain scripted demonstrations; no AI provider is connected.
 
-Run `npm install` and `npm run dev`, then open http://localhost:3000. Use `npm run lint` and `npm run build` for checks. No API key is required.
+## Local setup
 
-Existing `aethra_projects` browser data is retained. The former server user file, if present, is not deleted or imported; retain a private backup and register a separate demo account.
+1. Install dependencies with `npm install`.
+2. Create a private `.env.local` containing `DATABASE_URL=postgresql://aethra:<password>@192.168.0.3:5432/aethra_db` with the actual password. `.env.local` is ignored by Git.
+3. Run `npm run db:migrate` to apply additive Drizzle migrations, then `npm run dev` and open `http://localhost:3000`.
 
-## Quality checks
+Existing browser conversations remain local. After creating a new account, open Conversations to download a backup and explicitly import those conversations. The browser data is never deleted by import and may contain conversations from multiple old demo accounts. Old demo passwords cannot be used for the new server account.
 
-Use `npm run format`, `npm run format:check`, `npm run lint`, `npm test`, and `npm run build`.
-Tests use isolated synthetic storage and do not access browser user data.
-The sidebar width preference is saved independently of the temporary mobile drawer.
-Model selectors are local preferences and never contact an AI provider.
+Run `npm run lint`, `npm test`, `npm run format:check`, and `npm run build` for code checks. These local tests do not use the PostgreSQL server or change existing user data.

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createProject } from "@/lib/store";
-import { getSession, getModelPref, setModelPref } from "@/lib/session";
+import { api, changed } from "@/lib/api";
 import AethraMark from "@/components/AethraMark";
 import Select from "@/components/Select";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
@@ -36,26 +35,41 @@ export default function Home() {
   const [model, setModel] = useState("Aethra 1.0");
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const user = getSession();
-      setModel(getModelPref() || "Aethra 1.0");
-      if (user) setFirstName(user.firstName || user.email.split("@")[0]);
-    }, 0);
-    return () => clearTimeout(timer);
+    let active = true;
+    Promise.all([api("/api/auth/session"), api("/api/preferences")])
+      .then(([session, settings]) => {
+        if (!active) return;
+        setFirstName(session.user.firstName || "");
+        setModel(settings.preferences.model);
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!value.trim()) return;
     try {
-      const project = createProject(value.trim());
+      const { conversation: project } = await api("/api/conversations", {
+        method: "POST",
+        body: JSON.stringify({ prompt: value.trim(), model }),
+      });
+      changed();
       router.push(`/chat/${project.id}`);
     } catch (err) {
       setError(err.message);
     }
   };
-  const openSuggestion = (suggestion) => {
+  const openSuggestion = async (suggestion) => {
     try {
-      const project = createProject(suggestion.prompt);
+      const { conversation: project } = await api("/api/conversations", {
+        method: "POST",
+        body: JSON.stringify({ prompt: suggestion.prompt, model }),
+      });
+      changed();
       router.push(`/chat/${project.id}`);
     } catch (err) {
       setError(err.message);
@@ -91,9 +105,13 @@ export default function Home() {
               label="Model style"
               value={model}
               options={["Aethra 1.0", "Aethra 1.1"]}
-              onChange={(next) => {
+              onChange={async (next) => {
                 try {
-                  setModelPref(next);
+                  const result = await api("/api/preferences");
+                  await api("/api/preferences", {
+                    method: "PUT",
+                    body: JSON.stringify({ ...result.preferences, model: next }),
+                  });
                   setModel(next);
                 } catch {
                   setError("Model preference could not be saved.");

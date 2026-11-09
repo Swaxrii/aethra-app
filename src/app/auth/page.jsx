@@ -3,8 +3,7 @@
 import { useState } from "react";
 import AethraMark from "@/components/AethraMark";
 import { useRouter } from "next/navigation";
-import { setSession } from "@/lib/session";
-import { registerDemo, loginDemo } from "@/lib/localAuth";
+import { api } from "@/lib/api";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -24,15 +23,17 @@ export default function AuthPage() {
     setError("");
     setLoading(true);
     try {
-      if (isRegister && password !== confirmation)
-        throw new Error("The demo passwords do not match.");
-      const user = isRegister
-        ? await registerDemo({ firstName, lastName, email, password })
-        : await loginDemo(email, password);
-      setSession(user);
+      if (isRegister && password !== confirmation) throw new Error("Passwords do not match.");
+      await api(isRegister ? "/api/auth/register" : "/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify(
+          isRegister ? { firstName, lastName, email, password } : { email, password },
+        ),
+      });
       router.push("/");
+      router.refresh();
     } catch (err) {
-      setError(err.message || "Could not access local demo storage.");
+      setError(err.message || "Could not sign in.");
     } finally {
       setLoading(false);
     }
@@ -50,8 +51,7 @@ export default function AuthPage() {
         AETHRA AI
       </h1>
       <p className="mt-1 mb-8 text-sm font-extralight text-white/60 text-center animate-fade-up">
-        {isRegister ? "Create a local demo account." : "Sign in to your local demo account."} Demo
-        only: not secure. Do not use a real password.
+        {isRegister ? "Create your account." : "Welcome back."}
       </p>
 
       <div className="w-full relative flex items-center rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] p-1 mb-6 animate-fade-up">
@@ -115,9 +115,9 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              minLength={isRegister ? 6 : undefined}
+              minLength={isRegister ? 12 : undefined}
               autoComplete={isRegister ? "new-password" : "current-password"}
-              aria-label="Demo password"
+              aria-label="Password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -126,13 +126,13 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              aria-label="Confirm demo password"
+              aria-label="Confirm password"
               placeholder="Confirm password"
               autoComplete="new-password"
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
               required
-              minLength={6}
+              minLength={12}
               className={inputClass}
             />
           </>
@@ -151,9 +151,9 @@ export default function AuthPage() {
             />
             <input
               type="password"
-              minLength={isRegister ? 6 : undefined}
+              minLength={isRegister ? 12 : undefined}
               autoComplete={isRegister ? "new-password" : "current-password"}
-              aria-label="Demo password"
+              aria-label="Password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

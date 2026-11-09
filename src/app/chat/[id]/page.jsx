@@ -3,9 +3,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Copy, Download, Send, Square, MessageSquare } from "lucide-react";
-import { getProject, addMessage, addAIMessage, touchProject, projectToHTML } from "@/lib/store";
-import { getModelPref, setModelPref } from "@/lib/session";
-import { streamAIReply } from "@/lib/ai";
+import { projectToHTML } from "@/lib/store";
+import { api, changed } from "@/lib/api";
 import Markdown from "@/components/Markdown";
 import Select from "@/components/Select";
 export default function ChatPage() {
@@ -15,7 +14,8 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState("Aethra 1.0");
   const [streaming, setStreaming] = useState(false);
-  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const abort = useRef(null);
@@ -23,30 +23,35 @@ export default function ChatPage() {
   const scroll = useRef(null);
   useEffect(() => {
     generated.current = 0;
-    const timer = setTimeout(() => {
-      const p = getProject(id);
-      setProject(p);
-      setModel(p?.model || getModelPref() || "Aethra 1.0");
-      setLoading(false);
-      try {
-        touchProject(id);
-      } catch {
-        setError("Could not update browser storage.");
-      }
-    }, 0);
+    let active = true;
+    api(`/api/conversations/${id}`)
+      .then((data) => {
+        if (!active) return;
+        setProject(data.conversation);
+        setModel(data.conversation.model);
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
-      clearTimeout(timer);
+      active = false;
       abort.current?.abort();
     };
   }, [id]);
   useEffect(() => {
-    const refresh = () => setProject(getProject(id));
+    const refresh = () =>
+      api(`/api/conversations/${id}`)
+        .then((data) => setProject(data.conversation))
+        .catch(() => {});
     window.addEventListener("aethra-projects", refresh);
     return () => window.removeEventListener("aethra-projects", refresh);
   }, [id]);
   useEffect(() => {
     if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
-  }, [project, text]);
+  }, [project]);
   const count = project?.messages.length || 0;
   const lastRole = project?.messages.at(-1)?.role;
   useEffect(() => {
@@ -54,46 +59,44 @@ export default function ChatPage() {
     generated.current = count;
     const controller = new AbortController();
     abort.current = controller;
-    let partial = "";
     const timer = setTimeout(async () => {
       setStreaming(true);
-      setText("");
       setError("");
       try {
-        const messages = getProject(id).messages.map((m) => ({
-          role: m.role === "user" ? "user" : "assistant",
-          content: m.text,
-        }));
-        const reply = await streamAIReply(messages, {
-          model,
+        const data = await api(`/api/conversations/${id}/reply`, {
+          method: "POST",
+          body: "{}",
           signal: controller.signal,
-          onToken: (value) => {
-            partial = value;
-            setText(value);
-          },
         });
-        addAIMessage(id, reply);
+        setProject(data.conversation);
+        changed();
       } catch (err) {
-        if (err.name === "AbortError") {
-          if (partial.trim()) addAIMessage(id, partial);
-        } else setError(err.message || "Could not create the demo response.");
+        if (err.name !== "AbortError") setError(err.message || "Could not create the response.");
       } finally {
         setStreaming(false);
-        setText("");
-        setProject(getProject(id));
       }
     }, 0);
-    return () => clearTimeout(timer);
-  }, [id, count, lastRole, model]);
-  const send = (e) => {
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [id, count, lastRole, retryKey]);
+  const send = async (e) => {
     e.preventDefault();
-    if (!input.trim() || streaming) return;
+    if (!input.trim() || streaming || saving || lastRole === "user") return;
+    setSaving(true);
     try {
-      addMessage(id, input.trim(), model);
+      const data = await api(`/api/conversations/${id}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ text: input.trim(), role: "user", model }),
+      });
       setInput("");
-      setProject(getProject(id));
-    } catch {
-      setError("Could not save your message.");
+      setProject(data.conversation);
+      changed();
+    } catch (err) {
+      setError(err.message || "Could not save your message.");
+    } finally {
+      setSaving(false);
     }
   };
   const copy = async (value) => {
@@ -164,13 +167,25 @@ export default function ChatPage() {
           {streaming && (
             <article className="chat-message ai">
               <div className="message-label">Aethra · local demo</div>
-              <Markdown text={text || "Preparing a local response…"} />
+              <Markdown text="Preparing a local response…" />
             </article>
           )}
           {error && (
-            <p role="alert" className="feedback error">
+            <div className="feedback error" role="alert">
               {error}
-            </p>
+              {lastRole === "user" && !streaming && (
+                <button
+                  className="ui-button secondary"
+                  type="button"
+                  onClick={() => {
+                    generated.current = 0;
+                    setRetryKey((value) => value + 1);
+                  }}
+                >
+                  Retry response
+                </button>
+              )}
+            </div>
           )}
           {status && (
             <p role="status" className="text-xs text-white/70">
@@ -196,12 +211,16 @@ export default function ChatPage() {
               label="Model style"
               value={model}
               options={["Aethra 1.0", "Aethra 1.1"]}
-              onChange={(next) => {
+              onChange={async (next) => {
                 try {
-                  setModelPref(next);
+                  const result = await api("/api/preferences");
+                  await api("/api/preferences", {
+                    method: "PUT",
+                    body: JSON.stringify({ ...result.preferences, model: next }),
+                  });
                   setModel(next);
-                } catch {
-                  setError("Model preference could not be saved.");
+                } catch (err) {
+                  setError(err.message);
                 }
               }}
             />
@@ -209,20 +228,26 @@ export default function ChatPage() {
               <button
                 className="ui-button secondary chat-composer-button"
                 type="button"
-                onClick={() => abort.current?.abort()}
+                onClick={() => {
+                  abort.current?.abort();
+                  setError("Response stopped. You can retry.");
+                }}
               >
                 <Square size={15} />
                 Stop
               </button>
             ) : (
-              <button className="ui-button chat-composer-button" disabled={!input.trim()}>
+              <button
+                className="ui-button chat-composer-button"
+                disabled={!input.trim() || saving || lastRole === "user"}
+              >
                 <Send size={15} />
                 Send
               </button>
             )}
           </div>
         </form>
-        <p>Demo responses are scripted locally. No AI service is connected.</p>
+        <p>Responses are demonstrations. No AI service is connected.</p>
       </footer>
     </section>
   );
