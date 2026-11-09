@@ -59,7 +59,7 @@ export async function PATCH(req) {
       .set({ firstName, lastName, email, passwordHash, updatedAt: new Date() })
       .where(eq(users.id, user.id))
       .returning();
-    if (data.password) await revokeOtherSessions(user.id);
+    if (sensitive) await revokeOtherSessions(user.id);
     return json({ user: publicUser(updated) });
   } catch (err) {
     if (err.code === "23505") return error("Email already registered", 409);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AethraMark from "@/components/AethraMark";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -17,6 +17,18 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   const isRegister = mode === "register";
+
+  useEffect(() => {
+    let active = true;
+    api("/api/auth/session")
+      .then(() => {
+        if (active) router.replace("/");
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const submit = async (e) => {
     e.preventDefault();

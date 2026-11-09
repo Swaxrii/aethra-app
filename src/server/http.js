@@ -18,11 +18,18 @@ export async function body(req, maxBytes = 65536) {
   return data;
 }
 
+export function clientAddress(req) {
+  const forwarded = req.headers.get("x-forwarded-for");
+  const value = forwarded?.split(",")[0].trim() || req.headers.get("x-real-ip") || "local";
+  return value.slice(0, 64);
+}
+
 export function validOrigin(req) {
   const origin = req.headers.get("origin");
   const site = req.headers.get("sec-fetch-site");
   if (site === "cross-site" || !origin) return false;
-  return origin === new URL(req.url).origin;
+  const url = new URL(req.url);
+  return origin === `${url.protocol}//${req.headers.get("host") || url.host}`;
 }
 
 export function safeFailure() {

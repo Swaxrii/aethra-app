@@ -2,8 +2,8 @@ import argon2 from "argon2";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import { users, preferences } from "@/server/schema";
-import { createSession, limit, publicUser, setSessionCookie } from "@/server/auth";
-import { body, error, json, safeFailure, validOrigin } from "@/server/http";
+import { cleanupExpired, createSession, limit, publicUser, setSessionCookie } from "@/server/auth";
+import { body, clientAddress, error, json, safeFailure, validOrigin } from "@/server/http";
 
 export async function POST(req) {
   if (!validOrigin(req)) return error("Invalid origin", 403);
@@ -30,6 +30,7 @@ export async function POST(req) {
   )
     return error("Enter a valid name, email, and password of at least 12 characters", 400);
   try {
+    if (!(await limit("register-ip", clientAddress(req), 20))) return error("Try again later", 429);
     if (!(await limit("register", email, 5))) return error("Try again later", 429);
     const db = getDb();
     if (
@@ -46,6 +47,7 @@ export async function POST(req) {
       return { user: created, session: await createSession(created.id, tx) };
     });
     await setSessionCookie(session);
+    await cleanupExpired().catch(() => {});
     return json({ user: publicUser(user) }, 201);
   } catch (err) {
     if (err.code === "23505") return error("Email already registered", 409);

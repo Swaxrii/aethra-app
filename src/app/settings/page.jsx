@@ -4,6 +4,14 @@ import Link from "next/link";
 import { User, SlidersHorizontal, Save, RotateCcw } from "lucide-react";
 import { api } from "@/lib/api";
 import Select from "@/components/Select";
+
+function formatDate(value) {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not available";
+  return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
 export default function SettingsPage() {
   const [tab, setTab] = useState("profile");
   const [user, setUser] = useState(null);
@@ -16,6 +24,8 @@ export default function SettingsPage() {
   const [length, setLength] = useState("Balanced");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   useEffect(() => {
     let active = true;
     Promise.all([api("/api/auth/session"), api("/api/preferences")])
@@ -31,6 +41,9 @@ export default function SettingsPage() {
       })
       .catch((err) => {
         if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
@@ -39,6 +52,7 @@ export default function SettingsPage() {
   const save = async () => {
     setFeedback("");
     setError("");
+    setSaving(true);
     try {
       if (tab === "profile") {
         if (!user) throw new Error("Sign in first.");
@@ -67,6 +81,8 @@ export default function SettingsPage() {
       setFeedback("Changes saved.");
     } catch (err) {
       setError(err.message || "Could not save preferences.");
+    } finally {
+      setSaving(false);
     }
   };
   const reset = () => {
@@ -112,7 +128,12 @@ export default function SettingsPage() {
               </button>
             ))}
           </nav>
-          <div className="surface settings-panel">
+          <div className="surface settings-panel" aria-busy={loading}>
+            {loading && (
+              <p role="status" className="feedback">
+                Loading your account…
+              </p>
+            )}
             {tab === "profile" ? (
               <>
                 <h2>Your profile</h2>
@@ -121,6 +142,18 @@ export default function SettingsPage() {
                   <Link href="/auth" className="ui-button secondary">
                     Sign in or register
                   </Link>
+                )}
+                {user && (
+                  <dl className="account-meta">
+                    <div>
+                      <dt>Member since</dt>
+                      <dd>{formatDate(user.createdAt)}</dd>
+                    </div>
+                    <div>
+                      <dt>Last sign-in</dt>
+                      <dd>{user.lastLoginAt ? formatDate(user.lastLoginAt) : "This session"}</dd>
+                    </div>
+                  </dl>
                 )}
                 <label className="ui-field">
                   <span>Display name</span>
@@ -167,7 +200,7 @@ export default function SettingsPage() {
             ) : (
               <>
                 <h2>Assistant preferences</h2>
-                <p>Choose how local assistant responses are presented.</p>
+                <p>Choose how demonstration responses are presented.</p>
                 <div className="ui-field">
                   <span>Model style</span>
                   <Select
@@ -219,9 +252,9 @@ export default function SettingsPage() {
                 <RotateCcw size={15} />
                 Reset
               </button>
-              <button className="ui-button" onClick={save}>
+              <button className="ui-button" onClick={save} disabled={saving || loading}>
                 <Save size={15} />
-                Save changes
+                {saving ? "Saving…" : "Save changes"}
               </button>
             </footer>
           </div>

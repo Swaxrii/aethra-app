@@ -20,7 +20,7 @@ function validConversation(value) {
     value.id.length <= 110 &&
     typeof value.title === "string" &&
     value.title.trim().length > 0 &&
-    value.title.length <= 300 &&
+    value.title.length <= 10000 &&
     ["Aethra 1.0", "Aethra 1.1", undefined].includes(value.model) &&
     (value.createdAt === undefined || validTime(value.createdAt)) &&
     Array.isArray(value.messages) &&
@@ -30,7 +30,7 @@ function validConversation(value) {
         message &&
         ["user", "ai"].includes(message.role) &&
         typeof message.text === "string" &&
-        message.text.length > 0 &&
+        message.text.trim().length > 0 &&
         message.text.length <= 10000,
     )
   );
@@ -65,7 +65,7 @@ export async function POST(req) {
           .values({
             userId: user.id,
             legacyId: `browser:${item.id}`,
-            title: item.title.trim(),
+            title: item.title.trim().slice(0, 300),
             model: item.model || "Aethra 1.0",
             ...(validTime(item.createdAt) ? { createdAt: new Date(item.createdAt) } : {}),
           })

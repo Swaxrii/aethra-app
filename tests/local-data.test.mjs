@@ -29,7 +29,7 @@ test("browser conversations remain available for opt-in backup", () => {
 test("invalid browser conversations are never overwritten", () => {
   values.set("aethra_projects", "invalid-json");
   assert.throws(() => local.readConversations());
-  assert.throws(() => local.writeConversations([]));
+  assert.throws(() => local.exportConversationBackup());
   assert.equal(values.get("aethra_projects"), "invalid-json");
 });
 

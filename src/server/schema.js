@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   uuid,
@@ -8,6 +9,7 @@ import {
   real,
   uniqueIndex,
   index,
+  check,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable(
@@ -24,7 +26,10 @@ export const users = pgTable(
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
     lastActivityAt: timestamp("last_activity_at", { withTimezone: true }),
   },
-  (table) => [uniqueIndex("users_email_unique").on(table.email)],
+  (table) => [
+    uniqueIndex("users_email_unique").on(table.email),
+    check("users_status_check", sql`${table.status} in ('active', 'disabled')`),
+  ],
 );
 
 export const sessions = pgTable(
@@ -43,18 +48,30 @@ export const sessions = pgTable(
   (table) => [
     uniqueIndex("sessions_token_unique").on(table.tokenHash),
     index("sessions_user_idx").on(table.userId),
+    index("sessions_expires_idx").on(table.expiresAt),
   ],
 );
 
-export const preferences = pgTable("preferences", {
-  userId: uuid("user_id")
-    .primaryKey()
-    .references(() => users.id, { onDelete: "cascade" }),
-  model: varchar("model", { length: 30 }).notNull().default("Aethra 1.0"),
-  temperature: real("temperature").notNull().default(0.7),
-  responseLength: varchar("response_length", { length: 20 }).notNull().default("Balanced"),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const preferences = pgTable(
+  "preferences",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    model: varchar("model", { length: 30 }).notNull().default("Aethra 1.0"),
+    temperature: real("temperature").notNull().default(0.7),
+    responseLength: varchar("response_length", { length: 20 }).notNull().default("Balanced"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    check("preferences_model_check", sql`${table.model} in ('Aethra 1.0', 'Aethra 1.1')`),
+    check("preferences_temperature_check", sql`${table.temperature} between 0 and 2`),
+    check(
+      "preferences_response_length_check",
+      sql`${table.responseLength} in ('Short', 'Balanced', 'Detailed')`,
+    ),
+  ],
+);
 
 export const conversations = pgTable(
   "conversations",
@@ -72,6 +89,8 @@ export const conversations = pgTable(
   (table) => [
     index("conversations_user_updated_idx").on(table.userId, table.updatedAt),
     uniqueIndex("conversations_user_legacy_unique").on(table.userId, table.legacyId),
+    check("conversations_title_check", sql`char_length(btrim(${table.title})) between 1 and 300`),
+    check("conversations_model_check", sql`${table.model} in ('Aethra 1.0', 'Aethra 1.1')`),
   ],
 );
 
@@ -87,11 +106,19 @@ export const messages = pgTable(
     content: text("content").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("messages_conversation_created_idx").on(table.conversationId, table.position)],
+  (table) => [
+    uniqueIndex("messages_conversation_position_unique").on(table.conversationId, table.position),
+    check("messages_role_check", sql`${table.role} in ('user', 'ai')`),
+    check("messages_content_check", sql`char_length(${table.content}) between 1 and 10000`),
+  ],
 );
 
-export const rateLimits = pgTable("rate_limits", {
-  key: varchar("key", { length: 128 }).primaryKey(),
-  hits: integer("hits").notNull().default(0),
-  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
-});
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    key: varchar("key", { length: 128 }).primaryKey(),
+    hits: integer("hits").notNull().default(0),
+    resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [index("rate_limits_reset_idx").on(table.resetAt)],
+);

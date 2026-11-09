@@ -7,6 +7,7 @@ import { exportConversationBackup, readConversations } from "@/lib/localConversa
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [editing, setEditing] = useState(null);
   const [title, setTitle] = useState("");
@@ -22,7 +23,8 @@ export default function ProjectsPage() {
           setHasMore(data.hasMore);
           setError("");
         })
-        .catch((err) => setError(err.message));
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
     const timer = setTimeout(refresh, 0);
     const localTimer = setTimeout(() => {
       try {
@@ -225,6 +227,10 @@ export default function ProjectsPage() {
                 </div>
               </article>
             ))
+          ) : loading ? (
+            <p role="status" className="feedback">
+              Loading conversations…
+            </p>
           ) : (
             <div className="empty-conversations">
               <MessageSquare size={32} />

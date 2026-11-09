@@ -56,7 +56,7 @@ export async function listConversations(userId, query = "", offset = 0) {
       createdAt: conversations.createdAt,
       updatedAt: conversations.updatedAt,
       messageCount:
-        sql`(SELECT COUNT(*)::integer FROM messages m WHERE m.conversation_id = ${conversations.id})`.mapWith(
+        sql`(SELECT COUNT(*)::integer FROM messages m WHERE m.conversation_id = "conversations"."id")`.mapWith(
           Number,
         ),
     })

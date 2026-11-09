@@ -1,7 +1,7 @@
 export function projectToHTML(project, userName) {
   const rows = (project.messages || [])
     .map((m) => {
-      const role = m.role === "user" ? userName || "You" : "Aethra AI";
+      const role = m.role === "user" ? userName || "You" : "Aethra · demo response";
       const classRole = m.role === "user" ? "user" : "ai";
       return `<div class="msg ${classRole}">
         <div class="meta">${escapeHTML(role)}</div>

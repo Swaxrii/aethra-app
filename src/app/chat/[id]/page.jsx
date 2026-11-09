@@ -69,6 +69,7 @@ export default function ChatPage() {
           signal: controller.signal,
         });
         setProject(data.conversation);
+        setError("");
         changed();
       } catch (err) {
         if (err.name !== "AbortError") setError(err.message || "Could not create the response.");
@@ -149,7 +150,7 @@ export default function ChatPage() {
           {project.messages.map((m, i) => (
             <article key={i} className={`chat-message ${m.role}`}>
               <div className="message-label">
-                {m.role === "user" ? "You" : "Aethra · local demo"}
+                {m.role === "user" ? "You" : "Aethra · demo response"}
               </div>
               <div className="message-body">
                 {m.role === "ai" ? <Markdown text={m.text} /> : <p>{m.text}</p>}
@@ -166,7 +167,7 @@ export default function ChatPage() {
           ))}
           {streaming && (
             <article className="chat-message ai">
-              <div className="message-label">Aethra · local demo</div>
+              <div className="message-label">Aethra · demo response</div>
               <Markdown text="Preparing a local response…" />
             </article>
           )}
@@ -177,9 +178,17 @@ export default function ChatPage() {
                 <button
                   className="ui-button secondary"
                   type="button"
-                  onClick={() => {
-                    generated.current = 0;
-                    setRetryKey((value) => value + 1);
+                  onClick={async () => {
+                    try {
+                      const data = await api(`/api/conversations/${id}`);
+                      setProject(data.conversation);
+                      if (data.conversation.messages.at(-1)?.role === "user") {
+                        generated.current = 0;
+                        setRetryKey((value) => value + 1);
+                      } else setError("");
+                    } catch (err) {
+                      setError(err.message);
+                    }
                   }}
                 >
                   Retry response

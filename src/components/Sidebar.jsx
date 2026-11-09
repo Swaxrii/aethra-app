@@ -189,7 +189,7 @@ export default function Sidebar() {
           <Link href="/" onClick={close} aria-label="Aethra home">
             <AethraMark size={28} />
             <span>
-              Aethra<small>LOCAL WORKSPACE</small>
+              Aethra<small>YOUR WORKSPACE</small>
             </span>
           </Link>
           <button
@@ -315,22 +315,24 @@ export default function Sidebar() {
                 <User size={16} />
                 {user ? "Edit profile" : "Sign in / Register"}
               </Link>
-              <button
-                onClick={async () => {
-                  try {
-                    await api("/api/auth/logout", { method: "POST" });
-                  } catch (err) {
-                    setError(err.message);
-                    return;
-                  }
-                  setUser(null);
-                  setAccount(false);
-                  router.push("/auth");
-                }}
-              >
-                <LogOut size={16} />
-                Log out
-              </button>
+              {user && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await api("/api/auth/logout", { method: "POST" });
+                    } catch (err) {
+                      setError(err.message);
+                      return;
+                    }
+                    setUser(null);
+                    setAccount(false);
+                    router.push("/auth");
+                  }}
+                >
+                  <LogOut size={16} />
+                  Log out
+                </button>
+              )}
             </div>
           )}
           <button

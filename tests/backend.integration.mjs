@@ -1,18 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
-import { loadEnvConfig } from "@next/env";
+import nextEnv from "@next/env";
 import pg from "pg";
 
+const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd());
 const databaseUrl = process.env.DATABASE_URL;
 const baseUrl = process.env.AETHRA_TEST_BASE_URL || "http://localhost:3000";
 
-async function request(path, method = "GET", payload, cookie) {
+async function request(path, method = "GET", payload, cookie, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
-      ...(method !== "GET" ? { Origin: baseUrl } : {}),
+      ...(method !== "GET" && !options.omitOrigin ? { Origin: baseUrl } : {}),
       ...(payload ? { "Content-Type": "application/json" } : {}),
       ...(cookie ? { Cookie: cookie } : {}),
     },
@@ -20,10 +21,12 @@ async function request(path, method = "GET", payload, cookie) {
     signal: AbortSignal.timeout(10000),
   });
   const data = await response.json();
+  const setCookie = response.headers.get("set-cookie");
   return {
     status: response.status,
     data,
-    cookie: response.headers.get("set-cookie")?.split(";")[0],
+    cookie: setCookie?.split(";")[0],
+    setCookie,
   };
 }
 
@@ -46,6 +49,12 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
     });
     assert.equal(first.status, 201);
     assert.ok(first.cookie?.startsWith("aethra_session="));
+    assert.match(first.setCookie, /HttpOnly/i);
+    assert.match(first.setCookie, /SameSite=lax/i);
+    assert.match(first.setCookie, /Path=\//i);
+    assert.equal(first.data.user.passwordHash, undefined);
+    assert.ok(first.data.user.createdAt);
+    assert.equal(first.data.user.lastLoginAt, null);
     const [savedUser] = (
       await pool.query("SELECT id, password_hash, last_login_at FROM users WHERE email = $1", [
         firstEmail,
@@ -88,6 +97,7 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
     const login = await request("/api/auth/login", "POST", { email: firstEmail, password });
     assert.equal(login.status, 200);
     assert.ok(login.cookie);
+    assert.ok(login.data.user.lastLoginAt);
     assert.ok(
       (await pool.query("SELECT last_login_at FROM users WHERE id = $1", [savedUser.id])).rows[0]
         .last_login_at,
@@ -99,6 +109,67 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
       password,
     });
     assert.equal(second.status, 201);
+    assert.equal(
+      (await request("/api/preferences", "GET", undefined, second.cookie)).data.preferences.model,
+      "Aethra 1.0",
+    );
+    assert.equal((await request("/api/preferences", "GET")).status, 401);
+    assert.equal(
+      (
+        await request(
+          "/api/conversations",
+          "POST",
+          { prompt: "No origin", model: "Aethra 1.0" },
+          login.cookie,
+          { omitOrigin: true },
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await request(
+          "/api/preferences",
+          "PUT",
+          { model: "Aethra 2.0", temperature: 0.7, responseLength: "Balanced" },
+          login.cookie,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await request(
+          "/api/preferences",
+          "PUT",
+          { model: "Aethra 1.0", temperature: 3, responseLength: "Balanced" },
+          login.cookie,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await request(
+          "/api/conversations",
+          "POST",
+          { prompt: "", model: "Aethra 1.0" },
+          login.cookie,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await request(
+          "/api/conversations",
+          "POST",
+          { prompt: "Valid prompt", model: "Other" },
+          login.cookie,
+        )
+      ).status,
+      400,
+    );
     assert.equal(
       (
         await request(
@@ -138,6 +209,17 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
     );
     assert.equal(profile.status, 200);
     assert.equal(profile.data.user.email, updatedEmail);
+    assert.equal(
+      (
+        await request(
+          "/api/profile",
+          "PATCH",
+          { firstName: "Changed", lastName: "One", email: updatedEmail },
+          login.cookie,
+        )
+      ).status,
+      200,
+    );
     assert.equal((await request("/api/auth/session", "GET", undefined, first.cookie)).status, 401);
     assert.equal(
       (await request("/api/auth/login", "POST", { email: updatedEmail, password })).status,
@@ -156,6 +238,21 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
     );
     assert.equal(created.status, 201);
     const id = created.data.conversation.id;
+    assert.equal(
+      (await request("/api/conversations/not-a-uuid", "GET", undefined, login.cookie)).status,
+      404,
+    );
+    assert.equal(
+      (
+        await request(
+          `/api/conversations/${id}/messages`,
+          "POST",
+          { text: "Injected assistant message", role: "ai" },
+          login.cookie,
+        )
+      ).status,
+      403,
+    );
     assert.equal(
       (await request(`/api/conversations/${id}`, "GET", undefined, second.cookie)).status,
       404,
@@ -191,6 +288,10 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
       ["user", "ai"],
     );
     assert.equal(
+      (await request(`/api/conversations/${id}/reply`, "POST", {}, login.cookie)).status,
+      409,
+    );
+    assert.equal(
       (
         await request(
           `/api/conversations/${id}/messages`,
@@ -219,6 +320,17 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
       (await request(`/api/conversations/${id}`, "PATCH", { title: "Renamed" }, login.cookie)).data
         .conversation.title,
       "Renamed",
+    );
+    assert.deepEqual(
+      (
+        await request("/api/conversations?q=Renamed", "GET", undefined, login.cookie)
+      ).data.conversations.map((item) => item.id),
+      [id],
+    );
+    assert.deepEqual(
+      (await request("/api/conversations?q=%25", "GET", undefined, login.cookie)).data
+        .conversations,
+      [],
     );
     const legacy = {
       id: "p-test-1",
@@ -253,13 +365,14 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
     const imported = (
       await request("/api/conversations?q=Old conversation", "GET", undefined, login.cookie)
     ).data.conversations[0];
-    assert.equal(imported.messageCount, 2);
     const importedDetail = await request(
       `/api/conversations/${imported.id}`,
       "GET",
       undefined,
       login.cookie,
     );
+    assert.equal(importedDetail.data.conversation.messages.length, 2);
+    assert.equal(imported.messageCount, 2);
     assert.deepEqual(
       importedDetail.data.conversation.messages.map((message) => message.text),
       ["First", "Second"],

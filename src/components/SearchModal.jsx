@@ -9,6 +9,7 @@ export default function SearchModal({ open, onClose }) {
   const [query, setQuery] = useState("");
   const [projects, setProjects] = useState([]);
   const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const currentQuery = useRef("");
   const [error, setError] = useState("");
@@ -36,6 +37,7 @@ export default function SearchModal({ open, onClose }) {
     let active = true;
     const timer = setTimeout(
       async () => {
+        if (active) setLoading(true);
         try {
           const result = await api(`/api/conversations?q=${encodeURIComponent(query.trim())}`);
           if (active) {
@@ -49,6 +51,8 @@ export default function SearchModal({ open, onClose }) {
             setHasMore(false);
             setError(err.message);
           }
+        } finally {
+          if (active) setLoading(false);
         }
       },
       query ? 180 : 0,
@@ -120,6 +124,10 @@ export default function SearchModal({ open, onClose }) {
               <ArrowUpRight size={15} />
             </Link>
           ))
+        ) : loading ? (
+          <p className="search-empty" role="status">
+            Searching…
+          </p>
         ) : (
           <p className="search-empty" role="status">
             {query.trim() ? "No conversations found." : "Your conversations will appear here."}

@@ -34,17 +34,6 @@ export function readConversations() {
   return projects;
 }
 
-export function writeConversations(projects) {
-  if (typeof window === "undefined") throw new Error("Browser storage is unavailable.");
-  readConversations();
-  try {
-    window.localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-  } catch {
-    throw new Error("Could not save conversations. Your existing data has not been changed.");
-  }
-  window.dispatchEvent(new CustomEvent("aethra-projects"));
-}
-
 export function exportConversationBackup() {
   return JSON.stringify({ app: "aethra", version: 1, conversations: readConversations() }, null, 2);
 }

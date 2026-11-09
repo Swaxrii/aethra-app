@@ -1,12 +1,13 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { and, eq, gt, isNull, ne, sql } from "drizzle-orm";
+import { and, eq, gt, isNull, lt, ne, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { sessions, users, rateLimits } from "./schema";
 
 const COOKIE = "aethra_session";
 const TTL = 1000 * 60 * 60 * 24 * 14;
+let lastCleanup = 0;
 
 export function hash(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -76,12 +77,15 @@ export async function currentUser() {
 
 export async function revokeSession() {
   const token = (await cookies()).get(COOKIE)?.value;
-  if (token)
-    await getDb()
-      .update(sessions)
-      .set({ revokedAt: new Date() })
-      .where(eq(sessions.tokenHash, hash(token)));
-  (await cookies()).delete(COOKIE);
+  try {
+    if (token)
+      await getDb()
+        .update(sessions)
+        .set({ revokedAt: new Date() })
+        .where(eq(sessions.tokenHash, hash(token)));
+  } finally {
+    (await cookies()).delete(COOKIE);
+  }
 }
 
 export async function revokeOtherSessions(userId) {
@@ -105,4 +109,13 @@ export async function limit(action, identifier, max = 8) {
     sql`INSERT INTO rate_limits (key, hits, reset_at) VALUES (${key}, 1, now() + interval '15 minutes') ON CONFLICT (key) DO UPDATE SET hits = CASE WHEN rate_limits.reset_at < now() THEN 1 ELSE rate_limits.hits + 1 END, reset_at = CASE WHEN rate_limits.reset_at < now() THEN now() + interval '15 minutes' ELSE rate_limits.reset_at END RETURNING hits`,
   );
   return Number(rows.rows[0].hits) <= max;
+}
+
+export async function cleanupExpired() {
+  if (Date.now() - lastCleanup < 60 * 60 * 1000) return;
+  lastCleanup = Date.now();
+  const db = getDb();
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  await db.delete(sessions).where(lt(sessions.expiresAt, new Date()));
+  await db.delete(rateLimits).where(lt(rateLimits.resetAt, cutoff));
 }
