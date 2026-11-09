@@ -42,6 +42,3 @@ next-env.d.ts
 
 # user data
 /data/users.json
-
-audit
-docs
