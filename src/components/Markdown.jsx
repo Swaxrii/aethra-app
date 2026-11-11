@@ -79,10 +79,8 @@ function extractText(node) {
   return flatten(node?.children ?? node ?? "");
 }
 
-const isEmptyCode = (text) => !text || text.trim() === "";
-
 const components = {
-  p: ({ children }) => <p className="my-1.5 last:mb-0">{children}</p>,
+  p: ({ children }) => <div className="my-1.5 last:mb-0">{children}</div>,
   h1: ({ children }) => (
     <h1 className="mt-4 mb-2 text-lg font-semibold text-white first:mt-0">{children}</h1>
   ),
@@ -97,18 +95,11 @@ const components = {
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
   em: ({ children }) => <em className="italic">{children}</em>,
-  code: ({ children, className }) => {
-    const text = extractText(children);
-    const isBlock = isEmptyCode(text)
-      ? false
-      : /[\r\n]/.test(text) || text.length > 60 || /</.test(text);
-    if (isBlock) return <CodeBlock className={className}>{text}</CodeBlock>;
-    return (
-      <code className="px-1.5 py-0.5 rounded-md bg-white/10 text-[13px] text-[#f4a3c7] font-mono">
-        {children}
-      </code>
-    );
-  },
+  code: ({ children }) => (
+    <code className="px-1.5 py-0.5 rounded-md bg-white/10 text-[13px] text-[#f4a3c7] font-mono">
+      {children}
+    </code>
+  ),
   pre: ({ children }) => <CodeBlock>{extractText(children)}</CodeBlock>,
   blockquote: ({ children }) => (
     <blockquote className="my-2 pl-3 border-l-2 border-[#c6c9d2] text-white/75 italic">
