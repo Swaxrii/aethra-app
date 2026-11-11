@@ -1,133 +1,138 @@
 # Aethra
 
-A modern, AI-powered chat assistant built with **Next.js 16**. Aethra features a fully working authentication system, persistent conversation history, project management, and an AI backend powered by NVIDIA NIM — all wrapped in a polished dark interface.
+Aethra is a personal AI workspace built with Next.js 16 and PostgreSQL. It keeps accounts, sessions, preferences, conversations, and messages in a real database, with a dark cinematic interface that adapts to the system theme. Assistant replies stream from NVIDIA NIM.
 
 ## Features
 
-- **AI Chat with Streaming** — responses stream token by token for a smooth, live experience.
-- **Two AI Modes**
-  - `Aethra 1.0` — fast and concise (Meta Llama 3.1 8B Instruct).
-  - `Aethra 1.1` — deep reasoning for highly precise answers (NVIDIA Nemotron Reasoning).
-- **Stop Generation** — interrupt the AI at any time to save tokens; partial output is preserved.
-- **Formatted Markdown Replies** — headings, lists, bold, tables, and code blocks render natively, with a one-click **Copy Code** button.
-- **Authentication** — register and login with hashed passwords (`bcrypt`), stored in a local JSON database.
-- **Persistent Sessions** — stay logged in across reloads via `localStorage`.
-- **Projects & Recents** — every conversation is saved permanently; recently accessed ones surface in the sidebar within a 24-hour window.
-- **Settings** — edit your profile and fine-tune AI behavior (model, creativity, response length).
-- **Conversation Export** — download any chat as a standalone HTML file.
-- **Search** — quick access to recent projects and pages (CTRL+M).
+- Account registration, sign-in, logout, and persistent 14-day sessions.
+- Profile editing with password change and email update.
+- Conversations saved to your account, with search, rename, delete, and history.
+- Markdown assistant messages, copy, export to HTML, and retry.
+- Model style, creativity, and response length preferences.
+- Responsive sidebar, mobile drawer, keyboard-friendly controls, and reduced-motion support.
+- Same-origin request checks, HttpOnly session cookies, Argon2id passwords, rate limiting, and per-user ownership checks.
 
-## Tech Stack
+## Tech stack
 
-| Layer      | Technology                                                        |
-| ---------- | ----------------------------------------------------------------- |
-| Framework  | [Next.js 16](https://nextjs.org/) (App Router)                    |
-| Language   | JavaScript (ES Modules, JSX)                                      |
-| UI         | React 19, Tailwind CSS v4                                          |
-| Styling    | Custom CSS animations + Tailwind utilities                         |
-| AI Backend | NVIDIA NIM (OpenAI-compatible API)                                |
-| Auth       | `bcryptjs` password hashing, JSON file storage                     |
-| Markdown   | `react-markdown` + `remark-gfm`                                    |
+- Next.js 16 App Router, React 19, JavaScript/JSX
+- Tailwind 4 with custom CSS
+- PostgreSQL, Drizzle ORM, `pg`
+- Argon2id password hashing
+- `react-markdown` with GitHub-flavored Markdown
 
-## Prerequisites
+## Local setup
 
-- **Node.js 18.18 or later** (tested on v24)
-- **npm** (or your package manager of choice)
-- A **NVIDIA NIM API key** from [build.nvidia.com](https://build.nvidia.com)
+1. Install dependencies:
 
-## Getting Started
+   ```bash
+   npm install
+   ```
 
-### 1. Install dependencies
+2. Create `.env.local` with your PostgreSQL connection string:
 
-```bash
-npm install
-```
+   ```env
+   DATABASE_URL=postgresql://<user>:<password>@<host>:5432/aethra_db
+   NIVIDA_AI_API=<nvidia-api-key>
+   ```
 
-### 2. Set up environment variables
+   Never commit this file or share the password.
 
-Create a file named `.env.local` in the project root:
+3. Apply the database migrations:
 
-```bash
-NVIDIA_API_KEY=your-nvidia-nim-api-key
-NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
-NVIDIA_MODEL=nvidia/nemotron-3.5-lightning-30b-a3b
-```
+   ```bash
+   npm run db:migrate
+   ```
 
-| Variable            | Required | Description                                                        |
-| ------------------- | -------- | ------------------------------------------------------------------ |
-| `NVIDIA_API_KEY`    | Yes      | Your NVIDIA NIM API key.                                           |
-| `NVIDIA_BASE_URL`   | No       | NIM API endpoint. Defaults to the NVIDIA hosted API.               |
-| `NVIDIA_MODEL`      | No       | Fallback model used when no Aethra version is matched.             |
+4. Start the development server:
 
-> The `.env*` files are ignored by Git. Never commit your API key.
+   ```bash
+   npm run dev
+   ```
 
-### 3. Run in development
+5. Open `http://localhost:3000`.
 
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### 4. Production build
-
-```bash
-npm run build
-npm run start
-```
-
-## Project Structure
-
-```
-aethra-app/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── auth/
-│   │   │   │   ├── login/       # Login endpoint
-│   │   │   │   ├── register/    # Registration endpoint
-│   │   │   │   └── update/      # Profile update endpoint
-│   │   │   └── chat/            # AI chat (streaming) endpoint
-│   │   ├── auth/                # Login / Register page
-│   │   ├── chat/[id]/           # Individual conversation page
-│   │   ├── projects/            # All projects page
-│   │   ├── settings/            # Profile + AI preferences
-│   │   ├── globals.css          # Global styles
-│   │   └── animations.css       # CSS animations
-│   ├── components/
-│   │   ├── Sidebar.jsx          # Navigation + recents + context menu
-│   │   ├── SearchModal.jsx      # Global search (CTRL+M)
-│   │   ├── AuthGuard.jsx        # Route protection
-│   │   ├── Markdown.jsx         # Markdown + code block renderer
-│   │   └── Icons.jsx            # Shared SVG icon set
-│   └── lib/
-│       ├── store.js             # Project / message persistence
-│       ├── session.js           # Session + preference helpers
-│       ├── ai.js                # AI streaming client
-│       └── userDb.js            # JSON database + password hashing
-├── data/
-│   └── users.json               # User store (created at runtime)
-├── public/
-└── package.json
-```
-
-## How Data Is Stored
-
-- **Users** are stored in `data/users.json`, created on first run. Passwords are hashed with `bcrypt` (10 rounds).
-- **Conversations & projects** live in the browser's `localStorage` under the `aethra_projects` key.
-- **Session & preferences** are kept in `localStorage` as well.
-
-> Because conversations are stored client-side and users server-side, all data is local to your browser and machine — no external database required.
+Application tables are created by Drizzle migrations in schema `public`: `users`, `sessions`, `preferences`, `conversations`, `messages`, and `rate_limits`. The `drizzle` schema stores migration history only.
 
 ## Scripts
 
-| Command           | Description                       |
-| ----------------- | --------------------------------- |
-| `npm run dev`     | Start the development server      |
-| `npm run build`   | Create a production build         |
-| `npm run start`   | Run the production server         |
-| `npm run lint`    | Run ESLint                        |
+| Command                    | Description                                           |
+| -------------------------- | ----------------------------------------------------- |
+| `npm run dev`              | Start the development server                          |
+| `npm run build`            | Create a production build                             |
+| `npm start`                | Run the production server                             |
+| `npm run db:migrate`       | Apply pending database migrations                     |
+| `npm run lint`             | Run ESLint                                            |
+| `npm test`                 | Run local tests                                       |
+| `npm run test:integration` | Run the PostgreSQL/API suite (server must be running) |
+| `npm run format`           | Format files with Prettier                            |
+| `npm run format:check`     | Check formatting                                      |
 
-## License
+After changing `src/server/schema.js`, generate a new migration before applying it:
 
-This project is provided for public reference and demonstration. You are free to explore, learn from, and adapt it for your own projects.
+```bash
+npx drizzle-kit generate --config=drizzle.config.mjs
+npm run db:migrate
+```
+
+## Project structure
+
+```text
+src/app/           Pages and API routes
+src/components/    Shared interface components
+src/lib/           Browser API helper and export formatting
+src/server/        Database, authentication, and conversations
+src/proxy.js       Protected-page redirect based on the session cookie
+tests/             Local and integration tests
+drizzle/           SQL migrations and metadata
+```
+
+## API overview
+
+| Method           | Route                             | Purpose                                |
+| ---------------- | --------------------------------- | -------------------------------------- |
+| POST             | `/api/auth/register`              | Create an account and session          |
+| POST             | `/api/auth/login`                 | Sign in                                |
+| POST             | `/api/auth/logout`                | Sign out and revoke the session        |
+| GET              | `/api/auth/session`               | Current user                           |
+| PATCH            | `/api/profile`                    | Update profile or password             |
+| GET/PUT          | `/api/preferences`                | Read or save assistant preferences     |
+| GET/POST         | `/api/conversations`              | List, search, or create conversations  |
+| GET/PATCH/DELETE | `/api/conversations/:id`          | Read, rename, or delete a conversation |
+| POST             | `/api/conversations/:id/messages` | Add a user message                     |
+| POST             | `/api/conversations/:id/reply`    | Stream and save an assistant reply     |
+
+## Security notes
+
+- Session tokens are stored as SHA-256 hashes; the cookie is HttpOnly, `SameSite=Lax`, and `Secure` in production.
+- Passwords use Argon2id and never leave the server.
+- Every conversation and message query is scoped to the signed-in user.
+- Mutating requests require a same-origin `Origin` header.
+- Rate limits are stored in PostgreSQL.
+- Database credentials must stay only in `.env.local`.
+
+## Demo behavior
+
+The assistant streams replies from NVIDIA NIM. The API key stays on the server in `NIVIDA_AI_API`.
+
+## Tests
+
+Local tests:
+
+```bash
+npm test
+```
+
+Integration tests require a running app and database:
+
+```bash
+npm run db:migrate
+npm run dev
+# in another terminal
+npm run test:integration
+```
+
+The integration suite creates disposable accounts, verifies authentication, ownership isolation, validation, and cleanup, and deletes its test users when finished.
+
+## Status
+
+Working: authentication, profiles, preferences, conversations, messages, search, and NVIDIA replies. Not included: email verification, password reset, and account deletion.

@@ -1,307 +1,290 @@
 "use client";
-
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { getProject, addMessage, addAIMessage, touchProject, projectToHTML } from "@/lib/store";
-import { getModelPref, getSession } from "@/lib/session";
-import { streamAIReply } from "@/lib/ai";
+import Link from "next/link";
+import { Copy, Download, Send, Square, MessageSquare } from "lucide-react";
+import { projectToHTML } from "@/lib/store";
+import { api, changed } from "@/lib/api";
 import Markdown from "@/components/Markdown";
-
-const MODELS = ["Aethra 1.0", "Aethra 1.1"];
-
+import Select from "@/components/Select";
 export default function ChatPage() {
-  const params = useParams();
-  const id = params.id;
+  const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
-  const [model, setModel] = useState(MODELS.includes(getModelPref()) ? getModelPref() : MODELS[0]);
-  const [open, setOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const ref = useRef(null);
-  const scrollRef = useRef(null);
-  const exportRef = useRef(null);
+  const [model, setModel] = useState("Aethra 1.0");
   const [streaming, setStreaming] = useState(false);
-  const [streamText, setStreamText] = useState("");
-  const [streamError, setStreamError] = useState("");
-  const abortRef = useRef(null);
-  const generatedCountRef = useRef(0);
-
+  const [responseText, setResponseText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
+  const abort = useRef(null);
+  const generated = useRef(0);
+  const scroll = useRef(null);
   useEffect(() => {
-    const p = getProject(id);
-    setProject(p);
-    if (p) setModel(p.model);
-    setLoading(false);
-    touchProject(id);
+    generated.current = 0;
+    let active = true;
+    api(`/api/conversations/${id}`)
+      .then((data) => {
+        if (!active) return;
+        setProject(data.conversation);
+        setModel(data.conversation.model);
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+      abort.current?.abort();
+    };
   }, [id]);
-
   useEffect(() => {
-    const onStore = () => {
-      const p = getProject(id);
-      if (p) {
-        setProject(p);
-        setModel(p.model);
+    const refresh = () =>
+      api(`/api/conversations/${id}`)
+        .then((data) => setProject(data.conversation))
+        .catch(() => {});
+    window.addEventListener("aethra-projects", refresh);
+    return () => window.removeEventListener("aethra-projects", refresh);
+  }, [id]);
+  useEffect(() => {
+    if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
+  }, [project, responseText]);
+  const count = project?.messages.length || 0;
+  const lastRole = project?.messages.at(-1)?.role;
+  useEffect(() => {
+    if (lastRole !== "user" || count <= generated.current) return;
+    generated.current = count;
+    const controller = new AbortController();
+    abort.current = controller;
+    const timer = setTimeout(async () => {
+      setStreaming(true);
+      setResponseText("");
+      setError("");
+      try {
+        const response = await fetch(`/api/conversations/${id}/reply`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          if (response.status === 401) window.dispatchEvent(new CustomEvent("aethra-unauthorized"));
+          throw new Error(data.error || "Could not create the response.");
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let done = false;
+        while (true) {
+          const part = await reader.read();
+          buffer += decoder.decode(part.value || new Uint8Array(), { stream: !part.done });
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (!line) continue;
+            const event = JSON.parse(line);
+            if (event.error) throw new Error(event.error);
+            if (event.text) setResponseText((current) => current + event.text);
+            if (event.done) done = true;
+          }
+          if (part.done) break;
+        }
+        if (!done) throw new Error("The response was interrupted. Please retry.");
+        const data = await api(`/api/conversations/${id}`);
+        setProject(data.conversation);
+        setResponseText("");
+        setError("");
+        changed();
+      } catch (err) {
+        if (err.name !== "AbortError") setError(err.message || "Could not create the response.");
+      } finally {
+        setStreaming(false);
       }
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
     };
-    window.addEventListener("aethra-projects", onStore);
-    return () => window.removeEventListener("aethra-projects", onStore);
-  }, [id]);
-
-  useEffect(() => {
-    if (!loading && scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [id, count, lastRole, retryKey]);
+  const send = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || streaming || saving || lastRole === "user") return;
+    setSaving(true);
+    try {
+      const data = await api(`/api/conversations/${id}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ text: input.trim(), role: "user", model }),
+      });
+      setInput("");
+      setProject(data.conversation);
+      changed();
+    } catch (err) {
+      setError(err.message || "Could not save your message.");
+    } finally {
+      setSaving(false);
     }
-  }, [project, loading]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-      if (exportRef.current && !exportRef.current.contains(e.target)) setExportOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const safeName = () => (project?.title ? project.title.replace(/[\\/:*?"<>|\n]+/g, " ").trim().slice(0, 60) : "conversation") || "conversation";
-
-  const userName = () => {
-    const u = getSession();
-    if (!u) return "You";
-    return [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || u.email?.split("@")[0] || "You";
   };
-
-  const download = (filename, content, type) => {
-    const blob = new Blob([content], { type: `${type};charset=utf-8` });
+  const copy = async (value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setStatus("Message copied.");
+    } catch {
+      setError("Copy was unavailable. Select and copy the text instead.");
+    }
+  };
+  const download = () => {
+    const blob = new Blob([projectToHTML(project, "You")], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
+    a.download = "aethra-conversation.html";
     a.click();
-    a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-
-  const exportHTML = () => download(`${safeName()}.html`, projectToHTML(project, userName()), "text/html");
-
-  const generate = useCallback(async () => {
-    setStreaming(true);
-    setStreamError("");
-    setStreamText("");
-    generatedCountRef.current = getProject(id)?.messages.length || 0;
-    const controller = new AbortController();
-    abortRef.current = controller;
-    let partial = "";
-    try {
-      const payload = getProject(id)
-        ?.messages.map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })) || [];
-      const reply = await streamAIReply(payload, {
-        model,
-        signal: controller.signal,
-        onToken: (t) => {
-          partial = t;
-          setStreamText(t);
-        },
-      });
-      addAIMessage(id, reply);
-    } catch (err) {
-      if (err.name === "AbortError") {
-        if (partial.trim()) addAIMessage(id, partial);
-      } else {
-        setStreamError(err.message || "Something went wrong");
-      }
-    } finally {
-      abortRef.current = null;
-      setStreaming(false);
-      setProject(getProject(id));
-    }
-  }, [id, model]);
-
-  const stop = () => {
-    if (abortRef.current) abortRef.current.abort();
-  };
-
-  const send = () => {
-    const text = input.trim();
-    if (!text || streaming) return;
-    addMessage(id, text, model);
-    setProject(getProject(id));
-    setInput("");
-  };
-
-  const lastRole = project?.messages[project.messages.length - 1]?.role;
-  const messageCount = project?.messages.length || 0;
-
-  useEffect(() => {
-    if (lastRole === "user" && messageCount > generatedCountRef.current) {
-      generate();
-    }
-  }, [lastRole, messageCount, generate]);
-
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-white/40">Loading...</p>
+      <p role="status" className="p-8 text-white/70">
+        Loading conversation…
+      </p>
+    );
+  if (!project)
+    return (
+      <div className="empty-conversations">
+        <MessageSquare size={32} />
+        <h1>Conversation not found</h1>
+        <Link href="/" className="ui-button">
+          Start a new conversation
+        </Link>
       </div>
     );
-  }
-
-  if (!project) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-white/40">Conversation not found.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden">
-      <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 animate-rise">
-        <div className="max-w-[820px] mx-auto flex items-center justify-between gap-3">
-          <h1 className="flex-1 min-w-0 text-base sm:text-lg font-bold tracking-tight text-white truncate">{project.title}</h1>
-          <div ref={exportRef} className="relative flex-shrink-0">
-            <button type="button" onClick={() => setExportOpen(!exportOpen)} className="h-8 sm:h-9 px-3 rounded-lg bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] hover:text-white cursor-pointer">
-              <span className="flex items-center gap-1.5">
-                Export
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 ${exportOpen ? "rotate-180" : ""}`}>
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            </button>
-            {exportOpen && (
-              <div className="absolute z-30 right-0 top-[42px] w-[170px] rounded-[12px] bg-[#2A2A2D] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1 animate-drop-in">
-                <button type="button" onClick={() => { exportHTML(); setExportOpen(false); }} className="w-full text-left rounded-[10px] px-3.5 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">Download as HTML</button>
-              </div>
-            )}
-          </div>
+    <section className="chat-shell">
+      <header className="chat-header">
+        <div>
+          <span className="eyebrow">Conversation</span>
+          <h1>{project.title}</h1>
         </div>
-      </div>
-      <div className="h-px flex-shrink-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15)_15%,rgba(255,255,255,0.15)_85%,transparent)]" />
-
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-6 py-6 sm:py-8">
-        <div className="max-w-[820px] mx-auto space-y-6 sm:space-y-8">
-          {project.messages.map((m, i) =>
-            m.role === "ai" ? (
-              <div key={i} className="flex items-start gap-3 sm:gap-4">
-                <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="4" y="8" width="16" height="12" rx="2" />
-                      <path d="M12 8V4" />
-                      <circle cx="12" cy="3" r="1" />
-                      <circle cx="9" cy="13" r="1" fill="white" />
-                      <circle cx="15" cy="13" r="1" fill="white" />
-                      <path d="M9 17h6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <Markdown text={m.text} />
-                </div>
+        <button className="ui-button secondary" onClick={download}>
+          <Download size={16} />
+          Export HTML
+        </button>
+      </header>
+      <div className="chat-messages" ref={scroll}>
+        <div className="chat-reading">
+          {project.messages.map((m, i) => (
+            <article key={i} className={`chat-message ${m.role}`}>
+              <div className="message-label">{m.role === "user" ? "You" : "Aethra"}</div>
+              <div className="message-body">
+                {m.role === "ai" ? <Markdown text={m.text} /> : <p>{m.text}</p>}
               </div>
-            ) : (
-              <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] sm:max-w-[75%] rounded-[14px] bg-[#A64D79] px-3.5 sm:px-4 py-2.5 text-sm sm:text-[15px] leading-relaxed text-white font-light break-words">{m.text}</div>
-              </div>
-            ),
-          )}
+              <button
+                className="message-copy"
+                aria-label={`Copy message ${i + 1}`}
+                onClick={() => copy(m.text)}
+              >
+                <Copy size={14} />
+                Copy
+              </button>
+            </article>
+          ))}
           {streaming && (
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="flex-shrink-0 mt-0.5">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#A64D79] to-[#5C1E4D] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0 pt-0.5">
-                {streamError ? (
-                  <div className="text-sm text-red-400 font-light break-words whitespace-pre-wrap">{streamError}</div>
-                ) : streamText ? (
-                  <Markdown text={streamText} />
-                ) : (
-                  <div className="flex items-center gap-2 text-white/50">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" style={{ animationDelay: "0.15s" }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79] animate-pulse" style={{ animationDelay: "0.3s" }} />
-                  </div>
-                )}
-              </div>
+            <article className="chat-message ai">
+              <div className="message-label">Aethra</div>
+              <Markdown text={responseText || "Preparing a response…"} />
+            </article>
+          )}
+          {error && (
+            <div className="feedback error" role="alert">
+              {error}
+              {lastRole === "user" && !streaming && (
+                <button
+                  className="ui-button secondary"
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const data = await api(`/api/conversations/${id}`);
+                      setProject(data.conversation);
+                      if (data.conversation.messages.at(-1)?.role === "user") {
+                        generated.current = 0;
+                        setRetryKey((value) => value + 1);
+                      } else setError("");
+                    } catch (err) {
+                      setError(err.message);
+                    }
+                  }}
+                >
+                  Retry response
+                </button>
+              )}
             </div>
           )}
-          </div>
-        </div>
-
-      <div className="relative px-3 sm:px-6 py-3 sm:py-4">
-        <div className="absolute top-0 left-0 right-0 h-px bg-[linear-gradient(90deg,transparent,rgba(69,69,69,0.4)_12%,rgba(69,69,69,0.4)_88%,transparent)]" />
-        <div className="max-w-[820px] mx-auto flex items-center gap-2 sm:gap-3">
-          <input
-            type="text"
-            placeholder="Ask aethra anything..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") send();
-            }}
-            onFocus={() => setOpen(false)}
-            className="flex-1 min-w-0 h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3.5 sm:px-4 text-sm text-white font-light placeholder:text-white/70 outline-none transition-all duration-500 focus:border-[#A64D79]"
-          />
-          {streaming && (
-            <button
-              type="button"
-              onClick={stop}
-              aria-label="Stop generating"
-              className="flex-shrink-0 h-[46px] sm:h-[44px] px-3.5 rounded-[10px] bg-[#A64D79]/15 border border-[#A64D79]/50 flex items-center gap-2 text-sm font-medium text-[#f4a3c7] transition-all duration-300 hover:bg-[#A64D79]/25 cursor-pointer animate-pop"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
-              Stop
-            </button>
+          {status && (
+            <p role="status" className="text-xs text-white/70">
+              {status}
+            </p>
           )}
-          <div ref={ref} className="relative flex-shrink-0">
-            <button type="button" onClick={() => setOpen(!open)} aria-label="Select AI model" className="h-[46px] sm:h-[44px] rounded-[10px] bg-[rgba(69,69,69,0.25)] border border-[rgba(69,69,69,0.8)] px-3 sm:px-3.5 flex items-center justify-center gap-2 text-sm text-white/75 transition-all duration-300 hover:border-[#A64D79] cursor-pointer">
-              <span className="max-w-[110px] truncate">{model}</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`transition-transform duration-300 flex-shrink-0 ${open ? "rotate-180" : ""}`}>
-                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            {open && (
-              <div className="absolute z-20 right-0 bottom-[52px] w-[180px] sm:w-[200px] rounded-[12px] bg-[#2A2A2D] border border-[rgba(69,69,69,0.8)] shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-1.5 space-y-1">
-                {MODELS.map((m) => {
-                  const on = model === m;
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => {
-                        setModel(m);
-                        setOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer ${on ? "bg-[#A64D79]/15 text-white font-medium" : "text-white/70 hover:bg-white/5 hover:text-white"}`}>
-                      <span>{m}</span>
-                      {on && (
-                        <span className="w-4 h-4 rounded-full border-[2px] border-[#A64D79] flex items-center justify-center flex-shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#A64D79]" />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </div>
       </div>
-    </div>
+      <footer className="chat-composer">
+        <form onSubmit={send}>
+          <label className="sr-only" htmlFor="message">
+            Message Aethra
+          </label>
+          <textarea
+            id="message"
+            rows="2"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Continue the conversation…"
+          />
+          <div>
+            <Select
+              label="Model style"
+              value={model}
+              options={["Aethra 1.0", "Aethra 1.1"]}
+              onChange={async (next) => {
+                try {
+                  const result = await api("/api/preferences");
+                  await api("/api/preferences", {
+                    method: "PUT",
+                    body: JSON.stringify({ ...result.preferences, model: next }),
+                  });
+                  setModel(next);
+                } catch (err) {
+                  setError(err.message);
+                }
+              }}
+            />
+            {streaming ? (
+              <button
+                className="ui-button secondary chat-composer-button"
+                type="button"
+                onClick={() => {
+                  abort.current?.abort();
+                  setError("Response stopped. You can retry.");
+                }}
+              >
+                <Square size={15} />
+                Stop
+              </button>
+            ) : (
+              <button
+                className="ui-button chat-composer-button"
+                disabled={!input.trim() || saving || lastRole === "user"}
+              >
+                <Send size={15} />
+                Send
+              </button>
+            )}
+          </div>
+        </form>
+        <p>AI responses may contain mistakes.</p>
+      </footer>
+    </section>
   );
-}
-
-function parseHTMLConversation(html, title) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const messages = Array.from(doc.querySelectorAll(".msg")).map((el) => {
-    const isUser = Array.from(el.classList).includes("user");
-    const text = (el.querySelector("p")?.textContent || "").trim();
-    return { role: isUser ? "user" : "ai", text };
-  });
-  const model = doc.querySelector(".model")?.textContent?.trim() || "Aethra 1.0";
-  return { title: title || "Imported conversation", model, messages };
 }

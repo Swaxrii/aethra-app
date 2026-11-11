@@ -1,240 +1,362 @@
-﻿"use client";
-
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Image from "next/image";
-import { getRecentProjects, renameProject, deleteProject } from "@/lib/store";
-import { clearSession } from "@/lib/session";
+"use client";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import AethraMark from "./AethraMark";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Home,
+  Search,
+  FolderOpen,
+  Settings,
+  Plus,
+  PanelLeftClose,
+  PanelLeftOpen,
+  MoreHorizontal,
+  LogOut,
+  User,
+  Pencil,
+  Trash2,
+  Menu,
+} from "lucide-react";
+import { api, changed } from "@/lib/api";
 import SearchModal from "./SearchModal";
-import { SearchIcon, FolderIcon, SettingsIcon, LogoutIcon, PlusIcon, PencilIcon, TrashIcon, ChevronLeftIcon } from "./Icons";
-
-const GRADIENT_HOVER = "hover:bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] hover:text-white";
-const GRADIENT_ACTIVE = "bg-[linear-gradient(90deg,#A64D79_0%,rgba(64,30,47,0)_100%)] text-white";
-const NAV_BASE = "flex cursor-pointer items-center gap-3 rounded-[5px] px-2 py-2 text-[15px] font-normal transition-all";
 
 export default function Sidebar() {
+  const drawer = useRef(null);
+  const path = usePathname();
   const router = useRouter();
-  const pathname = usePathname();
-  const isSettings = pathname === "/settings";
-  const isProjects = pathname === "/projects";
-  const isAuth = pathname === "/auth";
-  const [isOpen, setIsOpen] = useState(true);
-  const [showCloseIcon, setShowCloseIcon] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [mobile, setMobile] = useState(false);
+  const [search, setSearch] = useState(false);
   const [projects, setProjects] = useState([]);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const [menu, setMenu] = useState(null);
-  const [editingId, setEditingId] = useState(null);
-  const [editValue, setEditValue] = useState("");
-
-  const logout = () => {
-    clearSession();
-    router.push("/auth");
-  };
-
-  const openMenu = (e, id) => {
-    e.preventDefault();
-    setMenu({ id, x: e.clientX, y: e.clientY });
-  };
-
-  const closeMenu = () => setMenu(null);
-
-  const startRename = () => {
-    const p = projects.find((x) => x.id === menu.id);
-    setEditingId(menu.id);
-    setEditValue(p ? p.title : "");
-    closeMenu();
-  };
-
-  const commitRename = (id) => {
-    renameProject(id, editValue);
-    setEditingId(null);
-    setEditValue("");
-  };
-
-  const removeProject = (id) => {
-    deleteProject(id);
-    closeMenu();
-    if (pathname === `/chat/${id}`) router.push("/");
-  };
-
+  const [account, setAccount] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [title, setTitle] = useState("");
+  const [error, setError] = useState("");
   useEffect(() => {
-    const onDown = (e) => {
-      if (e.key === "Escape") {
+    const media = window.matchMedia("(max-width: 767px)");
+    const sync = () => {
+      setMobile(media.matches);
+      let saved = false;
+      try {
+        saved = localStorage.getItem("aethra_sidebar_expanded") === "true";
+      } catch {}
+      setExpanded(media.matches ? false : saved);
+    };
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    const sync = () => {
+      api("/api/conversations")
+        .then((data) =>
+          setProjects(
+            data.conversations.filter((p) => Date.now() - p.lastAccessed < 24 * 60 * 60 * 1000),
+          ),
+        )
+        .catch(() => setProjects([]));
+      api("/api/auth/session")
+        .then((data) => setUser(data.user))
+        .catch(() => setUser(null));
+    };
+    const timer = setTimeout(sync, 0);
+    window.addEventListener("aethra-projects", sync);
+    window.addEventListener("storage", sync);
+    window.addEventListener("aethra-session", sync);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("aethra-projects", sync);
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("aethra-session", sync);
+    };
+  }, [path]);
+  useEffect(() => {
+    const handle = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "m") {
+        event.preventDefault();
+        setSearch((value) => !value);
+      }
+      if (event.key === "Escape") {
         setMenu(null);
-        setEditingId(null);
+        setAccount(false);
+        if (mobile) setExpanded(false);
       }
     };
-    window.addEventListener("keydown", onDown);
-    return () => window.removeEventListener("keydown", onDown);
-  }, []);
-
+    window.addEventListener("keydown", handle);
+    return () => window.removeEventListener("keydown", handle);
+  }, [mobile]);
   useEffect(() => {
-    const close = () => setMenu(null);
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
-  }, []);
-
+    const redirect = () => router.replace("/auth");
+    window.addEventListener("aethra-unauthorized", redirect);
+    return () => window.removeEventListener("aethra-unauthorized", redirect);
+  }, [router]);
   useEffect(() => {
-    setProjects(getRecentProjects());
-    const onStore = () => setProjects(getRecentProjects());
-    window.addEventListener("aethra-projects", onStore);
-    return () => window.removeEventListener("aethra-projects", onStore);
-  }, []);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "m") {
-        e.preventDefault();
-        setSearchOpen(true);
+    if (!mobile || !expanded) return;
+    const previous = document.activeElement;
+    const main = document.querySelector("main");
+    if (main) main.inert = true;
+    const focusable = () =>
+      Array.from(drawer.current?.querySelectorAll("a[href], button, input") || []);
+    const timer = setTimeout(() => focusable()[0]?.focus(), 0);
+    const trap = (event) => {
+      if (event.key !== "Tab") return;
+      const elements = focusable();
+      const first = elements[0];
+      const last = elements.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  if (isAuth) return null;
-
-  const commonWrapper = "flex-shrink-0 w-[18px] h-[18px]";
-
+    document.addEventListener("keydown", trap);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", trap);
+      if (main) main.inert = false;
+      previous?.focus();
+    };
+  }, [mobile, expanded]);
+  if (path === "/auth") return null;
+  const close = () => {
+    if (mobile) setExpanded(false);
+    setMenu(null);
+    setAccount(false);
+  };
+  const toggle = () => {
+    const next = !expanded;
+    setExpanded(next);
+    if (!mobile) {
+      try {
+        localStorage.setItem("aethra_sidebar_expanded", String(next));
+      } catch {
+        setError("The sidebar preference could not be saved.");
+      }
+    }
+  };
+  const rename = async (id) => {
+    try {
+      if (!title.trim()) return;
+      await api(`/api/conversations/${id}`, { method: "PATCH", body: JSON.stringify({ title }) });
+      changed();
+      setEditing(null);
+      setError("");
+    } catch {
+      setError("Could not save the conversation name.");
+    }
+  };
+  const remove = async (id) => {
+    if (!confirm("Delete this conversation? This cannot be undone.")) return;
+    try {
+      await api(`/api/conversations/${id}`, { method: "DELETE" });
+      changed();
+      setMenu(null);
+      if (path === `/chat/${id}`) router.push("/");
+    } catch {
+      setError("Could not delete this conversation.");
+    }
+  };
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Guest workspace";
   return (
     <>
-      {isMobile && isOpen && <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setIsOpen(false)} />}
-      <aside className={isMobile && isOpen ? "fixed inset-y-0 left-0 z-50 flex flex-col bg-[#3B1C32] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out w-[200px] animate-slide-in-left" : `h-full flex-shrink-0 flex flex-col bg-[#3B1C32] shadow-[-1px_0px_0px_rgba(255,255,255,0.15)] transition-all duration-300 ease-in-out ${isOpen ? "w-[200px]" : "w-[52px]"} animate-slide-in-left`} onMouseEnter={() => setShowCloseIcon(true)} onMouseLeave={() => setShowCloseIcon(false)}>
-        {isOpen ? (
-          <>
-            <div className="flex items-center gap-3 px-4 pt-6 relative">
-              <Image src="/logo.svg" alt="AethraCore" width={50} height={50} className="flex-shrink-0" />
-              <div className="flex flex-col min-w-0">
-                <span className="font-bold text-xl leading-tight text-white truncate">AETHRA AI</span>
-                <span className="font-extralight text-[11px] leading-tight text-white/50 truncate">Artificial Intelligence</span>
-              </div>
-              {showCloseIcon && (
-                <button onClick={() => setIsOpen(false)} className="absolute -right-2 top-6 flex items-center justify-center rounded-full bg-[#A64D79] p-1 transition-all hover:scale-110">
-                  <ChevronLeftIcon className="w-3.5 h-3.5 text-white" />
+      <button
+        className="mobile-nav-toggle"
+        aria-label="Open navigation"
+        aria-expanded={expanded}
+        onClick={toggle}
+      >
+        <Menu size={21} />
+      </button>
+      {mobile && expanded && (
+        <button
+          className="nav-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setExpanded(false)}
+        />
+      )}
+      <aside
+        ref={drawer}
+        className={`app-sidebar ${expanded ? "expanded" : "collapsed"} ${mobile ? "mobile" : ""}`}
+        aria-label="Workspace navigation"
+      >
+        <div className="nav-brand">
+          <Link href="/" onClick={close} aria-label="Aethra home">
+            <AethraMark size={28} />
+            <span>
+              Aethra<small>YOUR WORKSPACE</small>
+            </span>
+          </Link>
+          <button
+            className="icon-button"
+            title={expanded ? "Collapse sidebar" : "Expand sidebar"}
+            aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
+            aria-expanded={expanded}
+            onClick={toggle}
+          >
+            {expanded ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
+          </button>
+        </div>
+        <Link
+          className="nav-create"
+          href="/"
+          onClick={close}
+          title="New chat"
+          aria-label="New chat"
+        >
+          <Plus size={18} />
+          <span>New conversation</span>
+        </Link>
+        <nav className="nav-primary" aria-label="Main">
+          <p>WORKSPACE</p>
+          {[
+            ["/", "Home", Home],
+            ["/projects", "Projects", FolderOpen],
+            ["/settings", "Settings", Settings],
+          ].map(([href, label, Icon]) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={close}
+              title={label}
+              aria-label={label}
+              aria-current={path === href ? "page" : undefined}
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </Link>
+          ))}
+          <button
+            onClick={() => {
+              close();
+              setSearch(true);
+            }}
+            title="Search conversations"
+            aria-label="Search conversations"
+          >
+            <Search size={18} />
+            <span>Search</span>
+            <kbd>⌘ M</kbd>
+          </button>
+        </nav>
+        <section className="nav-history" aria-label="Recent conversations">
+          <p>RECENT CONVERSATIONS</p>
+          {projects.length === 0 && (
+            <small className="nav-empty">Your next idea starts here.</small>
+          )}
+          {projects.map((project) => (
+            <div className="nav-history-item" key={project.id}>
+              {editing === project.id ? (
+                <input
+                  autoFocus
+                  aria-label="Conversation name"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") rename(project.id);
+                    if (e.key === "Escape") setEditing(null);
+                  }}
+                  onBlur={() => rename(project.id)}
+                />
+              ) : (
+                <>
+                  <Link
+                    href={`/chat/${project.id}`}
+                    onClick={close}
+                    aria-current={path === `/chat/${project.id}` ? "page" : undefined}
+                  >
+                    {project.title}
+                  </Link>
+                  <button
+                    className="icon-button"
+                    aria-label={`Actions for ${project.title}`}
+                    aria-expanded={menu === project.id}
+                    onClick={() => setMenu(menu === project.id ? null : project.id)}
+                  >
+                    <MoreHorizontal size={17} />
+                  </button>
+                </>
+              )}
+              {menu === project.id && (
+                <div className="nav-popover">
+                  <button
+                    onClick={() => {
+                      setTitle(project.title);
+                      setEditing(project.id);
+                      setMenu(null);
+                    }}
+                  >
+                    <Pencil size={15} />
+                    Rename
+                  </button>
+                  <button onClick={() => remove(project.id)}>
+                    <Trash2 size={15} />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </section>
+        {error && (
+          <p role="alert" className="feedback error">
+            {error}
+          </p>
+        )}
+        <div className="nav-account">
+          {account && (
+            <div className="nav-popover">
+              <Link href={user ? "/settings" : "/auth"} onClick={close}>
+                <User size={16} />
+                {user ? "Edit profile" : "Sign in / Register"}
+              </Link>
+              {user && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await api("/api/auth/logout", { method: "POST" });
+                    } catch (err) {
+                      setError(err.message);
+                      return;
+                    }
+                    setUser(null);
+                    setAccount(false);
+                    router.push("/auth");
+                  }}
+                >
+                  <LogOut size={16} />
+                  Log out
                 </button>
               )}
             </div>
-
-            <button onClick={() => router.push("/")} className="mx-4 mt-6 flex cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#A64D79] px-3 py-2 text-sm font-medium text-white transition-all duration-200 ease-in-out hover:scale-[1.02] hover:bg-[#A64D79]/90 hover:shadow-md active:scale-[0.97] active:shadow-none">
-              <PlusIcon className="w-[16px] h-[16px]" />
-              New Chat
-            </button>
-
-            <nav className="mt-6 flex flex-col gap-1 px-4">
-              <button onClick={() => setSearchOpen(true)} className={`flex cursor-pointer items-center justify-between rounded-[5px] px-2 py-2 text-[15px] font-normal transition-all ${searchOpen ? GRADIENT_ACTIVE : "text-white/75 " + GRADIENT_HOVER}`}>
-                <span className="flex items-center gap-3 min-w-0">
-                  <SearchIcon className={commonWrapper} />
-                  <span className="truncate">Search</span>
-                </span>
-                <span className="border-[0.5px] border-[rgba(255,255,255,0.49)] rounded-[5px] px-1.5 py-0.5 text-[10px] font-light text-white flex-shrink-0">CTRL + M</span>
-              </button>
-              <button onClick={() => router.push("/projects")} className={`${NAV_BASE} ${isProjects ? GRADIENT_ACTIVE : "text-white/75 " + GRADIENT_HOVER}`}>
-                <FolderIcon className={commonWrapper} />
-                <span className="truncate">Projects</span>
-              </button>
-            </nav>
-
-            {projects.length > 0 && (
-              <div className="mt-5 px-4 flex flex-col">
-                <span className="px-2 text-[11px] font-light uppercase tracking-wider text-white/50">Recents</span>
-                <div className="mt-2 flex flex-col gap-1 max-h-[240px] overflow-y-auto">
-                  {projects.map((p) => {
-                    const active = pathname === `/chat/${p.id}`;
-                    if (editingId === p.id) {
-                      return (
-                        <input
-                          key={p.id}
-                          autoFocus
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={() => commitRename(p.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") commitRename(p.id);
-                            if (e.key === "Escape") {
-                              setEditingId(null);
-                              setEditValue("");
-                            }
-                          }}
-                          className="w-full rounded-[5px] bg-[rgba(69,69,69,0.3)] border border-[#A64D79] px-2 py-2 text-[13px] text-white outline-none"
-                        />
-                      );
-                    }
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => router.push(`/chat/${p.id}`)}
-                        onContextMenu={(e) => openMenu(e, p.id)}
-                        className={`flex cursor-pointer items-center gap-2 rounded-[5px] px-2 py-2 text-[13px] font-normal transition-all ${active ? GRADIENT_ACTIVE : "text-white/70 " + GRADIENT_HOVER}`}>
-                        <span className="truncate">{p.title}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {menu && (
-              <div
-                className="fixed z-[80] min-w-[170px] rounded-xl bg-[#232326]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] py-1.5 animate-[fade-in_0.12s_ease-out]"
-                style={{ left: menu.x, top: menu.y }}>
-                <button onClick={startRename} className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/80 hover:bg-[#A64D79]/15 hover:text-white transition-colors cursor-pointer text-left">
-                  <PencilIcon className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>Rename</span>
-                </button>
-                <div className="h-px mx-2 my-1 bg-white/[0.06]" />
-                <button onClick={() => removeProject(menu.id)} className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer text-left">
-                  <TrashIcon className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>Delete</span>
-                </button>
-              </div>
-            )}
-
-            <div className="mt-auto flex flex-col gap-1 px-4 pb-4">
-              <div className="h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15)_15%,rgba(255,255,255,0.15)_85%,transparent)]" />
-              <button onClick={() => router.push("/settings")} className={`${NAV_BASE} ${isSettings ? GRADIENT_ACTIVE : "text-white/75 " + GRADIENT_HOVER}`}>
-                <SettingsIcon className={commonWrapper} />
-                <span className="truncate">Settings</span>
-              </button>
-              <button onClick={logout} className={`${NAV_BASE} text-white/75 ${GRADIENT_HOVER}`}>
-                <LogoutIcon className={commonWrapper} />
-                <span className="truncate">Logout</span>
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-5 pt-6 w-full h-full">
-            <button onClick={() => setIsOpen(true)} className="cursor-pointer">
-              <Image src="/logo.svg" alt="AethraCore" width={28} height={28} className="flex-shrink-0 cursor-pointer" />
-            </button>
-
-            <button onClick={() => setSearchOpen(true)} className={`cursor-pointer transition-colors ${searchOpen ? "text-white" : "text-white/75 hover:text-white"}`}>
-              <SearchIcon className={commonWrapper} />
-            </button>
-
-            <button onClick={() => router.push("/projects")} className={`cursor-pointer transition-colors ${isProjects ? "text-white" : "text-white/75 hover:text-white"}`}>
-              <FolderIcon className={commonWrapper} />
-            </button>
-
-            <div className="mt-auto flex flex-col items-center gap-5 pb-4">
-              <button onClick={() => router.push("/settings")} className={`cursor-pointer transition-colors ${isSettings ? "text-white" : "text-white/75 hover:text-white"}`}>
-                <SettingsIcon className={commonWrapper} />
-              </button>
-              <button onClick={logout} className="cursor-pointer text-white/75 hover:text-white transition-colors">
-                <LogoutIcon className={commonWrapper} />
-              </button>
-            </div>
-          </div>
-        )}
+          )}
+          <button
+            title="Account menu"
+            aria-label="Account menu"
+            aria-expanded={account}
+            onClick={() => setAccount(!account)}
+          >
+            <span className="nav-avatar">{name[0]}</span>
+            <span>
+              {name}
+              <small>{user ? user.email : "Sign in"}</small>
+            </span>
+            <MoreHorizontal size={17} />
+          </button>
+        </div>
       </aside>
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal
+        open={search}
+        onClose={() => {
+          setSearch(false);
+          if (mobile) setExpanded(false);
+        }}
+      />
     </>
   );
 }
