@@ -14,6 +14,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState("Aethra 1.0");
   const [streaming, setStreaming] = useState(false);
+  const [responseText, setResponseText] = useState("");
   const [saving, setSaving] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [error, setError] = useState("");
@@ -51,7 +52,7 @@ export default function ChatPage() {
   }, [id]);
   useEffect(() => {
     if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
-  }, [project]);
+  }, [project, responseText]);
   const count = project?.messages.length || 0;
   const lastRole = project?.messages.at(-1)?.role;
   useEffect(() => {
@@ -61,14 +62,42 @@ export default function ChatPage() {
     abort.current = controller;
     const timer = setTimeout(async () => {
       setStreaming(true);
+      setResponseText("");
       setError("");
       try {
-        const data = await api(`/api/conversations/${id}/reply`, {
+        const response = await fetch(`/api/conversations/${id}/reply`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: "{}",
           signal: controller.signal,
         });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          if (response.status === 401) window.dispatchEvent(new CustomEvent("aethra-unauthorized"));
+          throw new Error(data.error || "Could not create the response.");
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let done = false;
+        while (true) {
+          const part = await reader.read();
+          buffer += decoder.decode(part.value || new Uint8Array(), { stream: !part.done });
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (!line) continue;
+            const event = JSON.parse(line);
+            if (event.error) throw new Error(event.error);
+            if (event.text) setResponseText((current) => current + event.text);
+            if (event.done) done = true;
+          }
+          if (part.done) break;
+        }
+        if (!done) throw new Error("The response was interrupted. Please retry.");
+        const data = await api(`/api/conversations/${id}`);
         setProject(data.conversation);
+        setResponseText("");
         setError("");
         changed();
       } catch (err) {
@@ -149,9 +178,7 @@ export default function ChatPage() {
         <div className="chat-reading">
           {project.messages.map((m, i) => (
             <article key={i} className={`chat-message ${m.role}`}>
-              <div className="message-label">
-                {m.role === "user" ? "You" : "Aethra · demo response"}
-              </div>
+              <div className="message-label">{m.role === "user" ? "You" : "Aethra"}</div>
               <div className="message-body">
                 {m.role === "ai" ? <Markdown text={m.text} /> : <p>{m.text}</p>}
               </div>
@@ -167,8 +194,8 @@ export default function ChatPage() {
           ))}
           {streaming && (
             <article className="chat-message ai">
-              <div className="message-label">Aethra · demo response</div>
-              <Markdown text="Preparing a local response…" />
+              <div className="message-label">Aethra</div>
+              <Markdown text={responseText || "Preparing a response…"} />
             </article>
           )}
           {error && (
@@ -256,7 +283,7 @@ export default function ChatPage() {
             )}
           </div>
         </form>
-        <p>Responses are demonstrations. No AI service is connected.</p>
+        <p>AI responses may contain mistakes.</p>
       </footer>
     </section>
   );

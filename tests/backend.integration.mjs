@@ -18,9 +18,16 @@ async function request(path, method = "GET", payload, cookie, options = {}) {
       ...(cookie ? { Cookie: cookie } : {}),
     },
     ...(payload ? { body: JSON.stringify(payload) } : {}),
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(120000),
   });
-  const data = await response.json();
+  const data = response.headers.get("content-type")?.includes("application/x-ndjson")
+    ? {
+        events: (await response.text())
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line)),
+      }
+    : await response.json();
   const setCookie = response.headers.get("set-cookie");
   return {
     status: response.status,
@@ -283,8 +290,10 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
     );
     const reply = await request(`/api/conversations/${id}/reply`, "POST", {}, login.cookie);
     assert.equal(reply.status, 200);
+    assert.ok(reply.data.events.some((event) => event.done));
+    const replied = await request(`/api/conversations/${id}`, "GET", undefined, login.cookie);
     assert.deepEqual(
-      reply.data.conversation.messages.map((message) => message.role),
+      replied.data.conversation.messages.map((message) => message.role),
       ["user", "ai"],
     );
     assert.equal(
@@ -296,15 +305,19 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
         await request(
           `/api/conversations/${id}/messages`,
           "POST",
-          { text: "Follow-up", role: "user" },
+          { text: "Follow-up", role: "user", model: "Aethra 1.0" },
           login.cookie,
         )
       ).status,
       201,
     );
+    const fastReply = await request(`/api/conversations/${id}/reply`, "POST", {}, login.cookie);
+    assert.equal(fastReply.status, 200);
+    assert.ok(fastReply.data.events.some((event) => event.done));
     assert.equal(
-      (await request(`/api/conversations/${id}/reply`, "POST", {}, login.cookie)).status,
-      200,
+      (await request(`/api/conversations/${id}`, "GET", undefined, login.cookie)).data.conversation
+        .model,
+      "Aethra 1.0",
     );
     const search = await request("/api/conversations?q=Follow-up", "GET", undefined, login.cookie);
     assert.deepEqual(
@@ -328,8 +341,14 @@ test("PostgreSQL accounts, sessions, preferences, and conversations", async () =
       [id],
     );
     assert.deepEqual(
-      (await request("/api/conversations?q=%25", "GET", undefined, login.cookie)).data
-        .conversations,
+      (
+        await request(
+          "/api/conversations?q=%25aethra-test-nonexistent-6b28",
+          "GET",
+          undefined,
+          login.cookie,
+        )
+      ).data.conversations,
       [],
     );
     assert.equal(

@@ -156,7 +156,7 @@ export default function Home() {
           ))}
         </div>
         <p className="cinema-disclaimer">
-          Conversations are saved to your account. Responses are scripted demonstrations.
+          Conversations are saved to your account. AI responses may contain mistakes.
         </p>
       </div>
     </section>

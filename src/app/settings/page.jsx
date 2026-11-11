@@ -200,7 +200,7 @@ export default function SettingsPage() {
             ) : (
               <>
                 <h2>Assistant preferences</h2>
-                <p>Choose how demonstration responses are presented.</p>
+                <p>Choose how responses are presented.</p>
                 <div className="ui-field">
                   <span>Model style</span>
                   <Select
